@@ -1,0 +1,6 @@
+gradio
+json-repair
+python-dotenv
+requests
+types-requests
+vllm==v0.8.1

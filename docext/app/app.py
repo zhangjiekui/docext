@@ -1,0 +1,134 @@
+from __future__ import annotations
+
+import signal
+
+import gradio as gr
+import json_repair
+
+from docext.core.client import sync_request
+from docext.core.prompts import get_fields_messages
+from docext.core.vllm import VLLMServer
+
+fields = []
+
+
+def add_field(field_name, description):
+    global fields
+    fields.append({"field_name": field_name, "description": description})
+    return update_fields_display()
+
+
+def update_fields_display():
+    display_text = ""
+    for i, field in enumerate(fields):
+        display_text += f"{i+1}. {field['field_name']} - {field['description']}\n"
+    return display_text
+
+
+def clear_fields():
+    global fields
+    fields = []
+    return update_fields_display()
+
+
+def remove_field(index):
+    global fields
+    if 0 <= index < len(fields):
+        del fields[index]
+    return update_fields_display()
+
+
+def define_fields():
+    gr.Markdown(
+        "### Add all the fields you want to extract information from the documents",
+    )
+
+    with gr.Row():
+        field_name = gr.Textbox(label="Field Name", placeholder="Enter field name")
+        description = gr.Textbox(label="Description", placeholder="Enter description")
+
+    with gr.Row():
+        add_btn = gr.Button("Add Field")
+        clear_btn = gr.Button("Clear All Fields")
+
+    fields_display = gr.Textbox(label="Fields", interactive=False, lines=8)
+
+    with gr.Row():
+        field_index = gr.Number(label="Field Index to Remove", value=0, precision=0)
+        remove_btn = gr.Button("Remove Field")
+
+    add_btn.click(add_field, [field_name, description], fields_display)
+    clear_btn.click(clear_fields, None, fields_display)
+    remove_btn.click(remove_field, field_index, fields_display)
+
+
+def extract_information(file_inputs: list[str], model_name: str):
+    file_paths = [file_input[0] for file_input in file_inputs]
+    global fields
+    field_names = [field["field_name"] for field in fields]
+    fields_description = [field["description"] for field in fields]
+    messages = get_fields_messages(field_names, fields_description, file_paths)
+    print("sending request to vllm")
+    response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
+    print(response)
+    return json_repair.loads(response)
+
+
+def gradio_app(model_name):
+    with gr.Blocks() as demo:
+        with gr.Tabs():
+            with gr.Tab("Information Extraction from documents"):
+                instructions_md = """Upload a list of documents and the corresponding fields and columns to extract information from the documents.
+                """
+                instructions = gr.Markdown(instructions_md)
+
+                # Define the fields
+                with gr.Row():
+                    with gr.Column():
+                        define_fields()
+
+                with gr.Row():
+                    with gr.Column():
+                        # Create a hidden textbox for model_name
+                        model_input = gr.Textbox(value=model_name, visible=False)
+                        interface = gr.Interface(
+                            fn=extract_information,
+                            inputs=[
+                                gr.Gallery(label="Upload images", preview=True),
+                                model_input,
+                            ],
+                            outputs=gr.Textbox(label="Extracted Information"),
+                            flagging_mode="never",
+                        )
+
+        demo.launch(
+            share=True,
+            server_name="0.0.0.0",
+            server_port=7861,
+        )
+
+
+if __name__ == "__main__":
+
+    # get the model name from the user
+    model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
+
+    ## start the vllm server
+    vllm_server = VLLMServer(model_name)
+    vllm_server.run_in_background()
+
+    # Stop the server when the script exits
+    def cleanup(signum, frame):
+        print("\nReceived exit signal. Stopping vLLM server...")
+        vllm_server.stop_server()
+        exit(0)
+
+    # Handle termination signals to stop the server gracefully
+    signal.signal(signal.SIGINT, cleanup)
+    signal.signal(signal.SIGTERM, cleanup)
+
+    try:
+        gradio_app(model_name)
+    except KeyboardInterrupt:
+        cleanup(None, None)
+        pass
