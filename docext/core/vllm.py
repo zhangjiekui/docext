@@ -21,7 +21,7 @@ class VLLMServer:
         """Start the vLLM server in a background thread."""
         print("Starting vLLM server...")
         # Command to start the vLLM server
-        # vllm serve Qwen/Qwen2.5-VL-7B-Instruct --port 8000 --host 0.0.0.0 --dtype bfloat16 --limit-mm-per-prompt image=1,video=0 --tensor-parallel-size 1 --served-model-name Qwen/Qwen2.5-VL-7B-Instruct --max-model-len 20000 --gpu-memory-utilization 0.95 --enforce-eager;
+        is_awq = "awq" in self.model_name.lower()
         command = [
             "vllm",
             "serve",
@@ -31,7 +31,7 @@ class VLLMServer:
             "--port",
             str(self.port),
             "--dtype",
-            "bfloat16",
+            "bfloat16" if not is_awq else "float16",
             "--limit-mm-per-prompt",
             "image=5,video=0",
             "--served-model-name",
@@ -42,6 +42,8 @@ class VLLMServer:
             "0.95",
             "--enforce-eager",
         ]
+        if is_awq:
+            command.extend(["--quantization", "awq"])
 
         # Start the server as a subprocess
         self.server_process = subprocess.Popen(command)
