@@ -3,7 +3,7 @@ from __future__ import annotations
 from docext.core.utils import encode_image
 
 
-def _get_field_desc_prompt(fields, fields_description):
+def _get_field_desc_prompt(fields: list[str], fields_description: list[str]) -> str:
     return "\n".join(
         [
             f"{field.replace(' ', '_').lower()}: {description}"
@@ -12,11 +12,15 @@ def _get_field_desc_prompt(fields, fields_description):
     )
 
 
-def _get_fields_output_format(fields):
+def _get_fields_output_format(fields: list[str]) -> dict:
     return {field.replace(" ", "_").lower(): "..." for field in fields}
 
 
-def get_fields_messages(fields, fields_description, filepaths):
+def get_fields_messages(
+    fields: list[str],
+    fields_description: list[str],
+    filepaths: list[str],
+) -> list[dict]:
     messages = [
         {
             "role": "user",
@@ -42,4 +46,20 @@ def get_fields_messages(fields, fields_description, filepaths):
             ],
         },
     ]
+    return messages
+
+
+def get_fields_confidence_score_messages(
+    messages: list[dict],
+    assistant_response: str,
+    fields: list[str],
+) -> list[dict]:
+    messages.append({"role": "assistant", "content": assistant_response})
+    output_format = {field: "High/Low" for field in fields}
+    messages.append(
+        {
+            "role": "user",
+            "content": f"For each field mentioned in the above answer, return 'High' if the extracted answer for the field is 100% correct and 'Low' otherwise. Return the result in the following JSON format: {output_format}. Do not give any explanation. If you are unsure about a field, return 'Low'",
+        },
+    )
     return messages

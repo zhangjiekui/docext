@@ -4,8 +4,10 @@ import signal
 
 import gradio as gr
 import json_repair
+import pandas as pd
 
 from docext.core.client import sync_request
+from docext.core.prompts import get_fields_confidence_score_messages
 from docext.core.prompts import get_fields_messages
 from docext.core.vllm import VLLMServer
 
@@ -106,7 +108,22 @@ def extract_information(file_inputs: list[str], model_name: str):
     print("sending request to vllm")
     response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
     print(response)
-    return json_repair.loads(response)
+    messages = get_fields_confidence_score_messages(messages, response, field_names)
+    response_conf_score = sync_request(messages, model_name)["choices"][0]["message"][
+        "content"
+    ]
+    print(response_conf_score)
+    extracted_fields = json_repair.loads(response)
+    conf_scores = json_repair.loads(response_conf_score)
+
+    df = pd.DataFrame(
+        {
+            "fields": field_names,
+            "answer": [extracted_fields.get(field, "") for field in field_names],
+            "confidence_score": [conf_scores.get(field, 0) for field in field_names],
+        },
+    )
+    return df
 
 
 def gradio_app(model_name):
@@ -139,7 +156,7 @@ def gradio_app(model_name):
                                 gr.Gallery(label="Upload images", preview=True),
                                 model_input,
                             ],
-                            outputs=gr.JSON(label="Extracted Information"),
+                            outputs=gr.Dataframe(label="Extracted Information"),
                             flagging_mode="never",
                         )
 
