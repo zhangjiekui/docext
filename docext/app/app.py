@@ -12,6 +12,8 @@ from docext.core.prompts import get_fields_confidence_score_messages
 from docext.core.prompts import get_fields_messages
 from docext.core.vllm import VLLMServer
 
+# from docext.core.prompts import get_fields_bboxes_messages
+
 fields = []
 
 
@@ -49,7 +51,7 @@ def add_predefined_fields(doc_type):
 
 def define_fields():
     gr.Markdown(
-        """### Add all the fields you want to extract information from the documents 📖
+        """### Add all the fields you want to extract information from the documents
         - Add a field by clicking the **`Add Field`** button. Description is optional.
         - You can also select predefined fields for a specific document type by selecting a template in **`Existing Templates`** dropdown.
         - List of fields will be displayed below in the **`Fields`** section.
@@ -98,13 +100,23 @@ def extract_information(file_inputs: list[str], model_name: str):
     print("sending request to vllm")
     response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
     print(response)
+    # conf score
     messages = get_fields_confidence_score_messages(messages, response, field_names)
     response_conf_score = sync_request(messages, model_name)["choices"][0]["message"][
         "content"
     ]
     print(response_conf_score)
+
+    # # bboxes
+    # messages = get_fields_bboxes_messages(field_names, fields_description, file_paths, response)
+    # response_bboxes = sync_request(messages, model_name)["choices"][0]["message"][
+    #     "content"
+    # ]
+    # print(response_bboxes)
+
     extracted_fields = json_repair.loads(response)
     conf_scores = json_repair.loads(response_conf_score)
+    # bboxes = json_repair.loads(response_bboxes)
 
     df = pd.DataFrame(
         {
@@ -120,7 +132,7 @@ def gradio_app(model_name):
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
-                instructions_md = """## Instructions
+                instructions_md = """## Instructions 📖
                 - Define the fields (and optionally the description) you want to extract from the document.
                 - Upload a document (can be a single image or a list of images in case of multipage document).
                 - Currently, we support only image files.

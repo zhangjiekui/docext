@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from PIL import Image
+
 from docext.core.utils import encode_image
 
 
@@ -46,6 +48,28 @@ def get_fields_messages(
             ],
         },
     ]
+    return messages
+
+
+def get_fields_bboxes_messages(
+    fields: list[str],
+    fields_description: list[str],
+    filepaths: list[str],
+    assistant_response: str,
+) -> list[dict]:
+    for filepath in filepaths:
+        image = Image.open(filepath)
+        image = image.resize((2044, 2044))
+        image.save(filepath)
+    messages = get_fields_messages(fields, fields_description, filepaths)
+    messages.append({"role": "assistant", "content": assistant_response})
+    output_format = {field: [0, 0, 0, 0] for field in fields}
+    messages.append(
+        {
+            "role": "user",
+            "content": f"For each field mentioned in the above answer, return the bounding box (x1,y1,x2,y2) for the answer for each fields. Return the result in the following JSON format: {output_format}. Do not give any explanation.",
+        },
+    )
     return messages
 
 

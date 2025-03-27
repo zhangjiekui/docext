@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 TEMPLATES = {
-    "invoice": [
+    "invoice 🧾": [
         {"field_name": "invoice_number", "description": "Invoice number"},
         {"field_name": "invoice_date", "description": "Invoice date"},
         {"field_name": "invoice_amount", "description": "Invoice amount"},
@@ -23,7 +23,7 @@ TEMPLATES = {
         {"field_name": "seller_tax_id", "description": "Seller tax id"},
         {"field_name": "buyer_tax_id", "description": "Buyer tax id"},
     ],
-    "passport": [
+    "passport 🎫": [
         {"field_name": "full_name", "description": "Full name"},
         {
             "field_name": "date_of_birth",
