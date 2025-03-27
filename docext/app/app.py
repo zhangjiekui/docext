@@ -21,7 +21,7 @@ def add_field(field_name, description):
 def update_fields_display():
     display_text = ""
     for i, field in enumerate(fields):
-        display_text += f"{i+1}. {field['field_name']} - {field['description']}\n"
+        display_text += f"{i}. {field['field_name']} - {field['description']}\n"
     return display_text
 
 
@@ -40,7 +40,12 @@ def remove_field(index):
 
 def define_fields():
     gr.Markdown(
-        "### Add all the fields you want to extract information from the documents",
+        """### Add all the fields you want to extract information from the documents
+        - Add a field by clicking the "Add Field" button. Description is optional.
+        - List of fields will be displayed below in the **`Fields`** section.
+        - Remove a field by clicking the "Remove Field" button. You will need to provide the index of the field to remove.
+        - Clear all the fields by clicking the "Clear All Fields" button.
+        """,
     )
 
     with gr.Row():
@@ -78,15 +83,22 @@ def gradio_app(model_name):
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
-                instructions_md = """Upload a list of documents and the corresponding fields and columns to extract information from the documents.
+                instructions_md = """## Instructions
+                - Define the fields (and optionally the description) you want to extract from the document.
+                - Upload a document (can be a single image or a list of images in case of multipage document).
+                - Currently, we support only image files.
+                - Currently, we only support maximum 5 images at a time. You can change this limit following the advanced instructions.
+                -----------------------------------------
                 """
-                instructions = gr.Markdown(instructions_md)
+                gr.Markdown(instructions_md)
 
                 # Define the fields
                 with gr.Row():
                     with gr.Column():
                         define_fields()
 
+                gr.Markdown("""-----------------------------------------""")
+                gr.Markdown("""### Upload images and extract information""")
                 with gr.Row():
                     with gr.Column():
                         # Create a hidden textbox for model_name
@@ -97,11 +109,12 @@ def gradio_app(model_name):
                                 gr.Gallery(label="Upload images", preview=True),
                                 model_input,
                             ],
-                            outputs=gr.Textbox(label="Extracted Information"),
+                            outputs=gr.JSON(label="Extracted Information"),
                             flagging_mode="never",
                         )
 
         demo.launch(
+            auth=("admin", "admin"),
             share=True,
             server_name="0.0.0.0",
             server_port=7861,
@@ -111,7 +124,7 @@ def gradio_app(model_name):
 if __name__ == "__main__":
 
     # get the model name from the user
-    model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
+    model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 
     ## start the vllm server
     vllm_server = VLLMServer(model_name)
