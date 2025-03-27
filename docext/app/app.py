@@ -63,11 +63,11 @@ def add_predefined_fields(doc_type):
 def define_fields():
     gr.Markdown(
         """### Add all the fields you want to extract information from the documents
-        - Add a field by clicking the "Add Field" button. Description is optional.
-        - You can also select predefined fields for a specific document type by clicking the "Add Predefined Fields" button.
+        - Add a field by clicking the **`Add Field`** button. Description is optional.
+        - You can also select predefined fields for a specific document type by clicking the **`Add Predefined Fields`** button.
         - List of fields will be displayed below in the **`Fields`** section.
-        - Remove a field by clicking the "Remove Field" button. You will need to provide the index of the field to remove.
-        - Clear all the fields by clicking the "Clear All Fields" button.
+        - Remove a field by clicking the **`Remove Field`** button. You will need to provide the index of the field to remove.
+        - Clear all the fields by clicking the **`Clear All Fields`** button.
         """,
     )
 
