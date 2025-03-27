@@ -1,1 +1,76 @@
 # docext
+
+An on-premises document information extraction tool powered by vision-language models.
+
+## Overview
+
+docext is a powerful tool for extracting structured information from documents such as invoices, passports, and other forms. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
+
+
+## Features
+
+- **User-friendly interface**: Built with Gradio for easy document processing
+- **Flexible extraction**: Define custom fields or use pre-built templates
+- **Table extraction**: Extract structured tabular data from documents
+- **Confidence scoring**: Get confidence levels for extracted information
+- **On-premises deployment**: Run entirely on your own infrastructure
+- **Multi-page support**: Process documents with multiple pages
+- **Pre-built templates**: Ready-to-use templates for common document types:
+  - Invoices
+  - Passports
+  - Create your own templates
+
+## Installation
+
+```bash
+# Install from PyPI
+pip install docext
+
+# Or install from source
+git clone https://github.com/nanonets/docext.git
+cd docext
+pip install -e .
+```
+
+## Web Interface
+
+docext includes a Gradio-based web interface for easy document processing:
+
+```bash
+# Start the web interface
+python -m docext.app.app
+```
+
+The interface will be available at http://localhost:7861 with default credentials:
+- Username: admin
+- Password: admin
+
+## Requirements
+
+- Python 3.11+
+- CUDA-compatible GPU (for optimal performance). Use Google Colab for free GPU access.
+- Dependencies listed in requirements.txt
+
+## Models
+
+docext uses vision-language models for document understanding. By default, it uses: Qwen/Qwen2.5-VL-7B-Instruct-AWQ
+
+Recommended models based on GPU memory:
+| Model | GPU Memory |
+|-------|------------|
+| Qwen/Qwen2.5-VL-7B-Instruct-AWQ | 16GB |
+| Qwen/Qwen2.5-VL-7B-Instruct | 24GB |
+| Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB |
+| Qwen/Qwen2.5-VL-32B-Instruct | 80 GB |
+
+## About
+
+docext is developed by [Nanonets](https://nanonets.com), a leader in document AI and intelligent document processing solutions. Nanonets is committed to advancing the field of document understanding through open-source contributions and innovative AI technologies. If you are looking for information extraction solutions for your business, please visit [our website](https://nanonets.com) to learn more.
+
+## Contributing
+
+We welcome contributions! Please see [contribution.md](contribution.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
