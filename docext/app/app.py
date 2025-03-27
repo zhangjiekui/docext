@@ -10,6 +10,20 @@ from docext.core.prompts import get_fields_messages
 from docext.core.vllm import VLLMServer
 
 fields = []
+predefined_fields_for_doc_types = {
+    "select_doc_type": [],
+    "invoice": [
+        {"field_name": "invoice_number", "description": "Invoice number"},
+        {"field_name": "invoice_date", "description": "Invoice date"},
+        {"field_name": "invoice_amount", "description": "Invoice amount"},
+    ],
+    "passport": [
+        {"field_name": "full_name", "description": "Full name"},
+        {"field_name": "date_of_birth", "description": "Date of birth"},
+        {"field_name": "passport_number", "description": "Passport number"},
+        {"field_name": "passport_type", "description": "Passport type"},
+    ],
+}
 
 
 def add_field(field_name, description):
@@ -38,10 +52,17 @@ def remove_field(index):
     return update_fields_display()
 
 
+def add_predefined_fields(doc_type):
+    global fields
+    fields = predefined_fields_for_doc_types[doc_type]
+    return update_fields_display()
+
+
 def define_fields():
     gr.Markdown(
         """### Add all the fields you want to extract information from the documents
         - Add a field by clicking the "Add Field" button. Description is optional.
+        - You can also select predefined fields for a specific document type by clicking the "Add Predefined Fields" button.
         - List of fields will be displayed below in the **`Fields`** section.
         - Remove a field by clicking the "Remove Field" button. You will need to provide the index of the field to remove.
         - Clear all the fields by clicking the "Clear All Fields" button.
@@ -55,6 +76,10 @@ def define_fields():
     with gr.Row():
         add_btn = gr.Button("Add Field")
         clear_btn = gr.Button("Clear All Fields")
+        add_predefined_fields_btn = gr.Dropdown(
+            choices=list(predefined_fields_for_doc_types.keys()),
+            label="Select Document Type",
+        )
 
     fields_display = gr.Textbox(label="Fields", interactive=False, lines=8)
 
@@ -65,6 +90,11 @@ def define_fields():
     add_btn.click(add_field, [field_name, description], fields_display)
     clear_btn.click(clear_fields, None, fields_display)
     remove_btn.click(remove_field, field_index, fields_display)
+    add_predefined_fields_btn.select(
+        add_predefined_fields,
+        add_predefined_fields_btn,
+        fields_display,
+    )
 
 
 def extract_information(file_inputs: list[str], model_name: str):
@@ -124,7 +154,7 @@ def gradio_app(model_name):
 if __name__ == "__main__":
 
     # get the model name from the user
-    model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+    model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
 
     ## start the vllm server
     vllm_server = VLLMServer(model_name)
