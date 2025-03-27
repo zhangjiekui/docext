@@ -37,9 +37,9 @@ class VLLMServer:
             "--served-model-name",
             self.model_name,
             "--max-model-len",
-            "20000",
+            "15000",
             "--gpu-memory-utilization",
-            "0.95",
+            "0.98",
             "--enforce-eager",
         ]
         if is_awq:
