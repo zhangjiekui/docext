@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import gradio as gr
 import pandas as pd
+from PIL import Image
 
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
@@ -126,6 +127,11 @@ def define_fields():
 
 def extract_information(file_inputs: list[str], model_name: str):
     file_paths: list[str] = [file_input[0] for file_input in file_inputs]
+    # resize and save the images to 2048x2048
+    for file_path in file_paths:
+        img = Image.open(file_path)
+        img = img.resize((2048, 2048))
+        img.save(file_path)
     fields: list[dict] = [field for field in METADATA if field["type"] == "field"]
     tables: list[dict] = [field for field in METADATA if field["type"] == "table"]
     # call fields and tables extraction in parallel
