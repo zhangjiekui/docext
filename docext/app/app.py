@@ -171,7 +171,7 @@ def gradio_app(model_name):
 if __name__ == "__main__":
 
     # get the model name from the user
-    model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
+    model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 
     ## start the vllm server
     vllm_server = VLLMServer(model_name)
