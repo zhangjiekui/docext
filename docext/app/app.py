@@ -49,7 +49,7 @@ def add_predefined_fields(doc_type):
 
 def define_fields():
     gr.Markdown(
-        """### Add all the fields you want to extract information from the documents
+        """### Add all the fields you want to extract information from the documents 📖
         - Add a field by clicking the **`Add Field`** button. Description is optional.
         - You can also select predefined fields for a specific document type by selecting a template in **`Existing Templates`** dropdown.
         - List of fields will be displayed below in the **`Fields`** section.
@@ -57,24 +57,27 @@ def define_fields():
         - Clear all the fields by clicking the **`Clear All Fields`** button.
         """,
     )
+    with gr.Row():
+        add_predefined_fields_btn = gr.Dropdown(
+            choices=["Select a template"] + list(TEMPLATES.keys()),
+            label="Existing Templates",
+        )
 
+    gr.Markdown("""#### Add a new field""")
     with gr.Row():
         field_name = gr.Textbox(label="Field Name", placeholder="Enter field name")
         description = gr.Textbox(label="Description", placeholder="Enter description")
 
     with gr.Row():
-        add_btn = gr.Button("Add Field")
-        clear_btn = gr.Button("Clear All Fields")
-        add_predefined_fields_btn = gr.Dropdown(
-            choices=["Select Document Type"] + list(TEMPLATES.keys()),
-            label="Existing Templates",
-        )
+        add_btn = gr.Button("Add Field ✚")
+        clear_btn = gr.Button("Clear All Fields ❌")
 
     fields_display = gr.Textbox(label="Fields", interactive=False, lines=8)
 
+    gr.Markdown("""#### Remove a field""")
     with gr.Row():
         field_index = gr.Number(label="Field Index to Remove", value=0, precision=0)
-        remove_btn = gr.Button("Remove Field")
+        remove_btn = gr.Button("Remove Field −")
 
     add_btn.click(add_field, [field_name, description], fields_display)
     clear_btn.click(clear_fields, None, fields_display)
@@ -107,7 +110,7 @@ def extract_information(file_inputs: list[str], model_name: str):
         {
             "fields": field_names,
             "answer": [extracted_fields.get(field, "") for field in field_names],
-            "confidence_score": [conf_scores.get(field, 0) for field in field_names],
+            "confidence": [conf_scores.get(field, 0) for field in field_names],
         },
     )
     return df
@@ -132,7 +135,7 @@ def gradio_app(model_name):
                         define_fields()
 
                 gr.Markdown("""-----------------------------------------""")
-                gr.Markdown("""### Upload images and extract information""")
+                gr.Markdown("""### Upload images and extract information ⚙️""")
                 with gr.Row():
                     with gr.Column():
                         # Create a hidden textbox for model_name
@@ -143,7 +146,12 @@ def gradio_app(model_name):
                                 gr.Gallery(label="Upload images", preview=True),
                                 model_input,
                             ],
-                            outputs=gr.Dataframe(label="Extracted Information"),
+                            outputs=gr.Dataframe(
+                                label="Extracted Information",
+                                wrap=True,
+                                interactive=False,
+                                column_widths=["100px", "140px", "70px"],
+                            ),
                             flagging_mode="never",
                         )
 

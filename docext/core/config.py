@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 TEMPLATES = {
-    "select_doc_type": [],
     "invoice": [
         {"field_name": "invoice_number", "description": "Invoice number"},
         {"field_name": "invoice_date", "description": "Invoice date"},
