@@ -27,9 +27,10 @@ def add_field(field_name: str, type: str, description: str):
 
 def update_fields_display():
     display_text = ""
-    dict_data = {"type": [], "name": [], "description": []}
+    dict_data = {"index": [], "type": [], "name": [], "description": []}
     for i, metadata in enumerate(METADATA):
         # display_text += f"{i}. {metadata['type']} - {metadata['field_name']} - {metadata['description']}\n"
+        dict_data["index"].append(i)
         dict_data["type"].append(metadata["type"])
         dict_data["name"].append(metadata["field_name"])
         dict_data["description"].append(metadata["description"])
