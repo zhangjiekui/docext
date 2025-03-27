@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import pandas as pd
 from PIL import Image
 
 from docext.core.utils import encode_image
 
 
-def _get_field_desc_prompt(fields: list[str], fields_description: list[str]) -> str:
+def _get_name_desc_prompt(fields: list[str], fields_description: list[str]) -> str:
     return "\n".join(
         [
             f"{field.replace(' ', '_').lower()}: {description}"
@@ -29,7 +30,7 @@ def get_fields_messages(
             "content": [
                 {
                     "type": "text",
-                    "text": f"Extract the following fields from the documents:\n {_get_field_desc_prompt(fields, fields_description)}.",
+                    "text": f"Extract the following fields from the documents:\n {_get_name_desc_prompt(fields, fields_description)}.",
                 },
                 {"type": "text", "text": f"Documents:\n"},
                 *[
@@ -51,25 +52,40 @@ def get_fields_messages(
     return messages
 
 
-def get_fields_bboxes_messages(
-    fields: list[str],
-    fields_description: list[str],
+def _get_tables_output_format(columns: list[str]) -> str:
+    return pd.DataFrame({col: [".."] for col in columns}).to_markdown(index=False)
+
+
+def get_tables_messages(
+    columns_names: list[str],
+    columns_description: list[str],
     filepaths: list[str],
-    assistant_response: str,
 ) -> list[dict]:
-    for filepath in filepaths:
-        image = Image.open(filepath)
-        image = image.resize((2044, 2044))
-        image.save(filepath)
-    messages = get_fields_messages(fields, fields_description, filepaths)
-    messages.append({"role": "assistant", "content": assistant_response})
-    output_format = {field: [0, 0, 0, 0] for field in fields}
-    messages.append(
+    messages = [
         {
             "role": "user",
-            "content": f"For each field mentioned in the above answer, return the bounding box (x1,y1,x2,y2) for the answer for each fields. Return the result in the following JSON format: {output_format}. Do not give any explanation.",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"Extract the following columns from the documents:\n {_get_name_desc_prompt(columns_names, columns_description)}.",
+                },
+                {"type": "text", "text": f"Documents:\n"},
+                *[
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                        },
+                    }
+                    for filepath in filepaths
+                ],
+                {
+                    "type": "text",
+                    "text": f"Return the table as an markdown table:\n {_get_tables_output_format(columns_names)}. If a cell is not found, return '' for that column. Do not give any explanation. If table is not found, return Empty Table with the column names.",
+                },
+            ],
         },
-    )
+    ]
     return messages
 
 

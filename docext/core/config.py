@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-TEMPLATES = {
+TEMPLATES_FIELDS = {
     "invoice 🧾": [
         {"field_name": "invoice_number", "description": "Invoice number"},
         {"field_name": "invoice_date", "description": "Invoice date"},
@@ -42,5 +42,18 @@ TEMPLATES = {
         {"field_name": "place_of_birth", "description": "Place of birth"},
         {"field_name": "nationality", "description": "Nationality"},
         {"field_name": "gender", "description": "Gender"},
+    ],
+}
+
+TEMPLATES_TABLES = {
+    "invoice 🧾": [
+        {"field_name": "Quantity", "description": "Total quantity of the product"},
+        {
+            "field_name": "items_description",
+            "description": "Description of the product",
+        },
+        {"field_name": "Unit Price", "description": "Unit price of the product"},
+        {"field_name": "Total Price", "description": "Total price of the product"},
+        {"field_name": "tax", "description": "tax amount"},
     ],
 }

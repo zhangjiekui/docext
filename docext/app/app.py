@@ -1,51 +1,75 @@
 from __future__ import annotations
 
 import signal
+from concurrent.futures import ThreadPoolExecutor
 
 import gradio as gr
-import json_repair
 import pandas as pd
 
-from docext.core.client import sync_request
-from docext.core.config import TEMPLATES
-from docext.core.prompts import get_fields_confidence_score_messages
-from docext.core.prompts import get_fields_messages
+from docext.core.config import TEMPLATES_FIELDS
+from docext.core.config import TEMPLATES_TABLES
+from docext.core.extract import extract_fields_from_documents
+from docext.core.extract import extract_tables_from_documents
 from docext.core.vllm import VLLMServer
 
 # from docext.core.prompts import get_fields_bboxes_messages
 
-fields = []
+METADATA = []
 
 
-def add_field(field_name, description):
-    global fields
-    fields.append({"field_name": field_name, "description": description})
+def add_field(field_name: str, type: str, description: str):
+    global METADATA
+    METADATA.append(
+        {"field_name": field_name, "type": type, "description": description},
+    )
     return update_fields_display()
 
 
 def update_fields_display():
     display_text = ""
-    for i, field in enumerate(fields):
-        display_text += f"{i}. {field['field_name']} - {field['description']}\n"
-    return display_text
+    dict_data = {"type": [], "name": [], "description": []}
+    for i, metadata in enumerate(METADATA):
+        # display_text += f"{i}. {metadata['type']} - {metadata['field_name']} - {metadata['description']}\n"
+        dict_data["type"].append(metadata["type"])
+        dict_data["name"].append(metadata["field_name"])
+        dict_data["description"].append(metadata["description"])
+    return pd.DataFrame(dict_data)
 
 
 def clear_fields():
-    global fields
-    fields = []
+    global METADATA
+    METADATA = []
     return update_fields_display()
 
 
 def remove_field(index):
-    global fields
-    if 0 <= index < len(fields):
-        del fields[index]
+    global METADATA
+    if 0 <= index < len(METADATA):
+        del METADATA[index]
     return update_fields_display()
 
 
 def add_predefined_fields(doc_type):
-    global fields
-    fields = TEMPLATES.get(doc_type, [])
+    global METADATA
+    fields = TEMPLATES_FIELDS.get(doc_type, [])
+    fields = [
+        {
+            "field_name": field["field_name"],
+            "type": "field",
+            "description": field["description"],
+        }
+        for field in fields
+    ]
+    tables = TEMPLATES_TABLES.get(doc_type, [])
+    tables = [
+        {
+            "field_name": table["field_name"],
+            "type": "table",
+            "description": table["description"],
+        }
+        for table in tables
+    ]
+    METADATA = fields + tables
     return update_fields_display()
 
 
@@ -61,27 +85,35 @@ def define_fields():
     )
     with gr.Row():
         add_predefined_fields_btn = gr.Dropdown(
-            choices=["Select a template"] + list(TEMPLATES.keys()),
+            choices=["Select a template"] + list(TEMPLATES_FIELDS.keys()),
             label="Existing Templates",
         )
 
-    gr.Markdown("""#### Add a new field""")
+    gr.Markdown("""#### Add a new field/column""")
     with gr.Row():
-        field_name = gr.Textbox(label="Field Name", placeholder="Enter field name")
+        field_name = gr.Textbox(
+            label="Field Name",
+            placeholder="Enter field/column name",
+        )
+        type = gr.Dropdown(choices=["field", "table"], label="Type")
         description = gr.Textbox(label="Description", placeholder="Enter description")
 
     with gr.Row():
-        add_btn = gr.Button("Add Field ✚")
-        clear_btn = gr.Button("Clear All Fields ❌")
+        add_btn = gr.Button("Add Field/Column ✚")
+        clear_btn = gr.Button("Clear All Fields/Columns ❌")
 
-    fields_display = gr.Textbox(label="Fields", interactive=False, lines=8)
+    fields_display = gr.Dataframe(label="Fields/Columns", wrap=True, interactive=False)
 
-    gr.Markdown("""#### Remove a field""")
+    gr.Markdown("""#### Remove a field/column""")
     with gr.Row():
-        field_index = gr.Number(label="Field Index to Remove", value=0, precision=0)
-        remove_btn = gr.Button("Remove Field −")
+        field_index = gr.Number(
+            label="Field/Column Index to Remove",
+            value=0,
+            precision=0,
+        )
+        remove_btn = gr.Button("Remove Field/Column −")
 
-    add_btn.click(add_field, [field_name, description], fields_display)
+    add_btn.click(add_field, [field_name, type, description], fields_display)
     clear_btn.click(clear_fields, None, fields_display)
     remove_btn.click(remove_field, field_index, fields_display)
     add_predefined_fields_btn.select(
@@ -92,40 +124,29 @@ def define_fields():
 
 
 def extract_information(file_inputs: list[str], model_name: str):
-    file_paths = [file_input[0] for file_input in file_inputs]
-    global fields
-    field_names = [field["field_name"] for field in fields]
-    fields_description = [field["description"] for field in fields]
-    messages = get_fields_messages(field_names, fields_description, file_paths)
-    print("sending request to vllm")
-    response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
-    print(response)
-    # conf score
-    messages = get_fields_confidence_score_messages(messages, response, field_names)
-    response_conf_score = sync_request(messages, model_name)["choices"][0]["message"][
-        "content"
-    ]
-    print(response_conf_score)
+    file_paths: list[str] = [file_input[0] for file_input in file_inputs]
+    fields: list[dict] = [field for field in METADATA if field["type"] == "field"]
+    tables: list[dict] = [field for field in METADATA if field["type"] == "table"]
+    # call fields and tables extraction in parallel
+    # fields_df: pd.DataFrame = extract_fields_from_documents(file_paths, model_name, fields)
+    # tables_df: pd.DataFrame = extract_tables_from_documents(file_paths, model_name, tables)
+    with ThreadPoolExecutor() as executor:
+        future_fields = executor.submit(
+            extract_fields_from_documents,
+            file_paths,
+            model_name,
+            fields,
+        )
+        future_tables = executor.submit(
+            extract_tables_from_documents,
+            file_paths,
+            model_name,
+            tables,
+        )
 
-    # # bboxes
-    # messages = get_fields_bboxes_messages(field_names, fields_description, file_paths, response)
-    # response_bboxes = sync_request(messages, model_name)["choices"][0]["message"][
-    #     "content"
-    # ]
-    # print(response_bboxes)
-
-    extracted_fields = json_repair.loads(response)
-    conf_scores = json_repair.loads(response_conf_score)
-    # bboxes = json_repair.loads(response_bboxes)
-
-    df = pd.DataFrame(
-        {
-            "fields": field_names,
-            "answer": [extracted_fields.get(field, "") for field in field_names],
-            "confidence": [conf_scores.get(field, 0) for field in field_names],
-        },
-    )
-    return df
+        fields_df = future_fields.result()
+        tables_df = future_tables.result()
+    return fields_df, tables_df
 
 
 def gradio_app(model_name):
@@ -158,12 +179,19 @@ def gradio_app(model_name):
                                 gr.Gallery(label="Upload images", preview=True),
                                 model_input,
                             ],
-                            outputs=gr.Dataframe(
-                                label="Extracted Information",
-                                wrap=True,
-                                interactive=False,
-                                column_widths=["100px", "140px", "70px"],
-                            ),
+                            outputs=[
+                                gr.Dataframe(
+                                    label="Extracted Information",
+                                    wrap=True,
+                                    interactive=False,
+                                    column_widths=["100px", "140px", "70px"],
+                                ),
+                                gr.Dataframe(
+                                    label="Extracted Tables",
+                                    wrap=True,
+                                    interactive=False,
+                                ),
+                            ],
                             flagging_mode="never",
                         )
 
@@ -180,22 +208,22 @@ if __name__ == "__main__":
     # get the model name from the user
     model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 
-    ## start the vllm server
-    vllm_server = VLLMServer(model_name)
-    vllm_server.run_in_background()
+    # ## start the vllm server
+    # vllm_server = VLLMServer(model_name)
+    # vllm_server.run_in_background()
 
-    # Stop the server when the script exits
-    def cleanup(signum, frame):
-        print("\nReceived exit signal. Stopping vLLM server...")
-        vllm_server.stop_server()
-        exit(0)
+    # # Stop the server when the script exits
+    # def cleanup(signum, frame):
+    #     print("\nReceived exit signal. Stopping vLLM server...")
+    #     vllm_server.stop_server()
+    #     exit(0)
 
-    # Handle termination signals to stop the server gracefully
-    signal.signal(signal.SIGINT, cleanup)
-    signal.signal(signal.SIGTERM, cleanup)
+    # # Handle termination signals to stop the server gracefully
+    # signal.signal(signal.SIGINT, cleanup)
+    # signal.signal(signal.SIGTERM, cleanup)
 
     try:
         gradio_app(model_name)
     except KeyboardInterrupt:
-        cleanup(None, None)
+        # cleanup(None, None)
         pass
