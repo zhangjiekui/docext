@@ -7,6 +7,7 @@ import threading
 import time
 
 import requests
+from loguru import logger
 
 
 class VLLMServer:
@@ -19,7 +20,7 @@ class VLLMServer:
 
     def start_server(self):
         """Start the vLLM server in a background thread."""
-        print("Starting vLLM server...")
+        logger.info("Starting vLLM server...")
         # Command to start the vLLM server
         is_awq = "awq" in self.model_name.lower()
         command = [
@@ -51,13 +52,13 @@ class VLLMServer:
 
     def wait_for_server(self, timeout=300):
         """Wait until the vLLM server is ready."""
-        print("Waiting for vLLM server to be ready...")
+        logger.info("Waiting for vLLM server to be ready...")
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
                 response = requests.get(self.url)
                 if response.status_code == 200:
-                    print(
+                    logger.info(
                         f"vLLM server started on {self.host}:{self.port} with PID: {self.server_process.pid}",
                     )
                     return True
@@ -65,17 +66,17 @@ class VLLMServer:
                 pass
             time.sleep(2)
 
-        print("Error: vLLM server did not start in time.")
+        logger.error("Error: vLLM server did not start in time.")
         self.stop_server()
         exit(1)
 
     def stop_server(self):
         """Stop the vLLM server gracefully."""
         if self.server_process:
-            print("Stopping vLLM server...")
+            logger.info("Stopping vLLM server...")
             self.server_process.terminate()
             self.server_process.wait()
-            print("vLLM server stopped.")
+            logger.info("vLLM server stopped.")
 
     def run_in_background(self):
         """Run the server in a background thread and wait for readiness."""

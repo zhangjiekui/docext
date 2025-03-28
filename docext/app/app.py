@@ -4,9 +4,14 @@ import signal
 from concurrent.futures import ThreadPoolExecutor
 
 import gradio as gr
+import hydra
 import pandas as pd
+from loguru import logger
+from omegaconf import DictConfig
+from omegaconf import OmegaConf
 from PIL import Image
 
+from docext.app.utils import cleanup
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
 from docext.core.extract import extract_fields_from_documents
@@ -156,7 +161,7 @@ def extract_information(file_inputs: list[str], model_name: str):
     return fields_df, tables_df
 
 
-def gradio_app(model_name):
+def gradio_app(model_name: str, gradio_port: int):
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
@@ -206,31 +211,42 @@ def gradio_app(model_name):
             auth=("admin", "admin"),
             share=True,
             server_name="0.0.0.0",
-            server_port=7861,
+            server_port=gradio_port,
         )
 
 
-if __name__ == "__main__":
-
-    # get the model name from the user
-    model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
-
-    ## start the vllm server
-    vllm_server = VLLMServer(model_name)
+def main(model_name: str, host: str, port: int, gradio_port: int):
+    vllm_server = VLLMServer(model_name, host, port)
     vllm_server.run_in_background()
 
-    # Stop the server when the script exits
-    def cleanup(signum, frame):
-        print("\nReceived exit signal. Stopping vLLM server...")
-        vllm_server.stop_server()
-        exit(0)
-
     # Handle termination signals to stop the server gracefully
-    signal.signal(signal.SIGINT, cleanup)
-    signal.signal(signal.SIGTERM, cleanup)
+    signal.signal(
+        signal.SIGINT,
+        lambda signum, frame: cleanup(signum, frame, vllm_server),
+    )
+    signal.signal(
+        signal.SIGTERM,
+        lambda signum, frame: cleanup(signum, frame, vllm_server),
+    )
 
     try:
-        gradio_app(model_name)
+        gradio_app(model_name, gradio_port)
     except KeyboardInterrupt:
-        cleanup(None, None)
+        cleanup(None, None, vllm_server)
         pass
+
+
+@hydra.main(version_base=None, config_path="../../configs", config_name="cfg.yaml")
+def docext_app(cfg: DictConfig):
+    logger.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
+
+    main(
+        cfg.model_name,
+        cfg.vllm_config.host,
+        cfg.vllm_config.port,
+        cfg.gradio_config.port,
+    )
+
+
+if __name__ == "__main__":
+    docext_app()
