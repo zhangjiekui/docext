@@ -23,6 +23,9 @@ setup(
     ],
     python_requires=">=3.11",
     install_requires=requirements,
+    dependency_links=[
+        "https://github.com/huggingface/transformers/tarball/49b5ab6a27511de5168c72e83318164f1b4adc43#egg=transformers",
+    ],
     extras_require={
         "dev": ["pre-commit"],
     },

@@ -215,22 +215,22 @@ if __name__ == "__main__":
     # get the model name from the user
     model_name = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 
-    # ## start the vllm server
-    # vllm_server = VLLMServer(model_name)
-    # vllm_server.run_in_background()
+    ## start the vllm server
+    vllm_server = VLLMServer(model_name)
+    vllm_server.run_in_background()
 
-    # # Stop the server when the script exits
-    # def cleanup(signum, frame):
-    #     print("\nReceived exit signal. Stopping vLLM server...")
-    #     vllm_server.stop_server()
-    #     exit(0)
+    # Stop the server when the script exits
+    def cleanup(signum, frame):
+        print("\nReceived exit signal. Stopping vLLM server...")
+        vllm_server.stop_server()
+        exit(0)
 
-    # # Handle termination signals to stop the server gracefully
-    # signal.signal(signal.SIGINT, cleanup)
-    # signal.signal(signal.SIGTERM, cleanup)
+    # Handle termination signals to stop the server gracefully
+    signal.signal(signal.SIGINT, cleanup)
+    signal.signal(signal.SIGTERM, cleanup)
 
     try:
         gradio_app(model_name)
     except KeyboardInterrupt:
-        # cleanup(None, None)
+        cleanup(None, None)
         pass
