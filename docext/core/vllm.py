@@ -11,10 +11,19 @@ from loguru import logger
 
 
 class VLLMServer:
-    def __init__(self, model_name, host="0.0.0.0", port=8000):
+    def __init__(
+        self,
+        model_name: str,
+        host: str = "0.0.0.0",
+        port: int = 8000,
+        max_model_len: int = 15000,
+        gpu_memory_utilization: float = 0.98,
+    ):
         self.host = host
         self.port = port
         self.model_name = model_name
+        self.max_model_len = max_model_len
+        self.gpu_memory_utilization = gpu_memory_utilization
         self.server_process = None
         self.url = f"http://{self.host}:{self.port}/v1/models"
 
@@ -38,9 +47,9 @@ class VLLMServer:
             "--served-model-name",
             self.model_name,
             "--max-model-len",
-            "15000",
+            str(self.max_model_len),
             "--gpu-memory-utilization",
-            "0.98",
+            str(self.gpu_memory_utilization),
             "--enforce-eager",
         ]
         if is_awq:

@@ -215,8 +215,21 @@ def gradio_app(model_name: str, gradio_port: int):
         )
 
 
-def main(model_name: str, host: str, port: int, gradio_port: int):
-    vllm_server = VLLMServer(model_name, host, port)
+def main(
+    model_name: str,
+    host: str,
+    port: int,
+    gradio_port: int,
+    max_model_len: int,
+    gpu_memory_utilization: float,
+):
+    vllm_server = VLLMServer(
+        model_name,
+        host,
+        port,
+        max_model_len,
+        gpu_memory_utilization,
+    )
     vllm_server.run_in_background()
 
     # Handle termination signals to stop the server gracefully
@@ -245,6 +258,8 @@ def docext_app(cfg: DictConfig):
         cfg.vllm_config.host,
         cfg.vllm_config.port,
         cfg.gradio_config.port,
+        cfg.vllm_config.max_model_len,
+        cfg.vllm_config.gpu_memory_utilization,
     )
 
 
