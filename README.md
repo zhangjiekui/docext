@@ -37,8 +37,11 @@ pip install -e .
 docext includes a Gradio-based web interface for easy document processing:
 
 ```bash
-# Start the web interface
+# Start the web interface with default configs
 python -m docext.app.app
+
+# Start the web interface with custom configs
+python -m docext.app.app --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
 ```
 
 The interface will be available at http://localhost:7861 with default credentials:
