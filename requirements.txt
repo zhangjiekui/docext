@@ -1,8 +1,6 @@
 accelerate
 flash-attn
-git+https://github.com/huggingface/transformers@49b5ab6a27511de5168c72e83318164f1b4adc43
 gradio
-hydra-core
 json-repair
 loguru
 mdpd
