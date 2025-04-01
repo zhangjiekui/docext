@@ -166,19 +166,3 @@ We welcome contributions! Please see [contribution.md](contribution.md) for guid
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-list[
-  dict(
-    image: dict(
-      path: str | None (Path to a local file),
-      url: str | None (Publicly available url or base64 encoded image),
-      size: int | None (Size of image in bytes),
-      orig_name: str | None (Original filename),
-      mime_type: str | None (mime type of image),
-      is_stream: bool (Can always be set to False),
-      meta: dict()
-    ),
-    caption: str | None
-  )
-]
