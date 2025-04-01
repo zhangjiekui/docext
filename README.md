@@ -165,6 +165,7 @@ docext is developed by [Nanonets](https://nanonets.com), a leader in document AI
 ## Contributing
 
 We welcome contributions! Please see [contribution.md](contribution.md) for guidelines.
+If you have a feature request or need support for a new model, feel free to open an issue—we’d love to discuss it further!
 
 ## License
 
