@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from typing import Union
+
 import json_repair
 import mdpd
 import pandas as pd
@@ -9,6 +12,9 @@ from docext.core.client import sync_request
 from docext.core.prompts import get_fields_confidence_score_messages
 from docext.core.prompts import get_fields_messages
 from docext.core.prompts import get_tables_messages
+from docext.core.utils import resize_images
+from docext.core.utils import validate_fields_and_tables
+from docext.core.utils import validate_file_paths
 
 
 def extract_fields_from_documents(
@@ -16,8 +22,8 @@ def extract_fields_from_documents(
     model_name: str,
     fields: list[dict],
 ):
-    field_names = [field["field_name"] for field in fields]
-    fields_description = [field["description"] for field in fields]
+    field_names = [field["name"] for field in fields]
+    fields_description = [field.get("description", "") for field in fields]
     messages = get_fields_messages(field_names, fields_description, file_paths)
 
     logger.info(f"Sending request to {model_name}")
@@ -49,11 +55,9 @@ def extract_tables_from_documents(
     model_name: str,
     columns: list[dict],
 ):
-    columns_names = [
-        column["field_name"] for column in columns if column["type"] == "table"
-    ]
+    columns_names = [column["name"] for column in columns if column["type"] == "table"]
     columns_description = [
-        column["description"] for column in columns if column["type"] == "table"
+        column.get("description", "") for column in columns if column["type"] == "table"
     ]
     messages = get_tables_messages(columns_names, columns_description, file_paths)
 
@@ -64,3 +68,39 @@ def extract_tables_from_documents(
     df = mdpd.from_md(response)
 
     return df
+
+
+def extract_information(
+    file_inputs: list[str],
+    model_name: str,
+    max_img_size: int,
+    fields_and_tables: dict | pd.DataFrame,
+):
+    fields_and_tables = validate_fields_and_tables(fields_and_tables)
+    if len(fields_and_tables["fields"]) == 0 and len(fields_and_tables["tables"]) == 0:
+        return pd.DataFrame(), pd.DataFrame()
+    file_paths: list[str] = [
+        file_input[0] if isinstance(file_input, tuple) else file_input
+        for file_input in file_inputs
+    ]
+    validate_file_paths(file_paths)
+    resize_images(file_paths, max_img_size)
+
+    # call fields and tables extraction in parallel
+    with ThreadPoolExecutor() as executor:
+        future_fields = executor.submit(
+            extract_fields_from_documents,
+            file_paths,
+            model_name,
+            fields_and_tables["fields"],
+        )
+        future_tables = executor.submit(
+            extract_tables_from_documents,
+            file_paths,
+            model_name,
+            fields_and_tables["tables"],
+        )
+
+        fields_df = future_fields.result()
+        tables_df = future_tables.result()
+    return fields_df, tables_df

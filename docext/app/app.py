@@ -1,24 +1,17 @@
 from __future__ import annotations
 
 import signal
-from concurrent.futures import ThreadPoolExecutor
 
 import gradio as gr
 import pandas as pd
 from loguru import logger
-from omegaconf import DictConfig
-from omegaconf import OmegaConf
-from PIL import Image
 
 from docext.app.args import parse_args
 from docext.app.utils import cleanup
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
-from docext.core.extract import extract_fields_from_documents
-from docext.core.extract import extract_tables_from_documents
+from docext.core.extract import extract_information
 from docext.core.vllm import VLLMServer
-
-# from docext.core.prompts import get_fields_bboxes_messages
 
 METADATA = []
 
@@ -32,10 +25,8 @@ def add_field(field_name: str, type: str, description: str):
 
 
 def update_fields_display():
-    display_text = ""
     dict_data = {"index": [], "type": [], "name": [], "description": []}
     for i, metadata in enumerate(METADATA):
-        # display_text += f"{i}. {metadata['type']} - {metadata['field_name']} - {metadata['description']}\n"
         dict_data["index"].append(i)
         dict_data["type"].append(metadata["type"])
         dict_data["name"].append(metadata["field_name"])
@@ -80,7 +71,7 @@ def add_predefined_fields(doc_type):
     return update_fields_display()
 
 
-def define_fields():
+def define_keys_and_extract(model_name: str, max_img_size: int):
     gr.Markdown(
         """### Add all the fields you want to extract information from the documents
         - Add a field by clicking the **`Add Field`** button. Description is optional.
@@ -129,43 +120,39 @@ def define_fields():
         fields_display,
     )
 
+    gr.Markdown("""-----------------------------------------""")
+    gr.Markdown("""### Upload images and extract information ⚙️""")
+    with gr.Row():
+        with gr.Column():
+            # Create a hidden textbox for model_name
+            model_input = gr.Textbox(value=model_name, visible=False)
+            max_img_size_input = gr.Number(
+                value=max_img_size,
+                visible=False,
+            )
 
-def extract_information(file_inputs: list[str], model_name: str, max_img_size: int):
-    file_paths: list[str] = [file_input[0] for file_input in file_inputs]
-    for file_path in file_paths:
-        img = Image.open(file_path)
-        img = img.resize((max_img_size, max_img_size))
-        img.save(file_path)
-    fields: list[dict] = [field for field in METADATA if field["type"] == "field"]
-    tables: list[dict] = [field for field in METADATA if field["type"] == "table"]
-    # call fields and tables extraction in parallel
-    fields_df: pd.DataFrame = extract_fields_from_documents(
-        file_paths,
-        model_name,
-        fields,
-    )
-    tables_df: pd.DataFrame = extract_tables_from_documents(
-        file_paths,
-        model_name,
-        tables,
-    )
-    # with ThreadPoolExecutor() as executor:
-    #     future_fields = executor.submit(
-    #         extract_fields_from_documents,
-    #         file_paths,
-    #         model_name,
-    #         fields,
-    #     )
-    #     future_tables = executor.submit(
-    #         extract_tables_from_documents,
-    #         file_paths,
-    #         model_name,
-    #         tables,
-    #     )
+            images_input = gr.Gallery(label="Upload images", preview=True)
+            submit_btn = gr.Button("Submit")
 
-    #     fields_df = future_fields.result()
-    #     tables_df = future_tables.result()
-    return fields_df, tables_df
+    with gr.Row():
+        with gr.Column(scale=0.3):
+            extracted_fields_output = gr.Dataframe(
+                label="Extracted Fields",
+                wrap=True,
+                interactive=False,
+            )
+        with gr.Column(scale=0.7):
+            extracted_tables_output = gr.Dataframe(
+                label="Extracted Tables",
+                wrap=True,
+                interactive=False,
+            )
+
+    submit_btn.click(
+        extract_information,
+        [images_input, model_name, max_img_size, fields_display],
+        [extracted_fields_output, extracted_tables_output],
+    )
 
 
 def gradio_app(model_name: str, gradio_port: int, max_img_size: int):
@@ -180,48 +167,17 @@ def gradio_app(model_name: str, gradio_port: int, max_img_size: int):
                 -----------------------------------------
                 """
                 gr.Markdown(instructions_md)
-
                 # Define the fields
-                with gr.Row():
-                    with gr.Column():
-                        define_fields()
-
-                gr.Markdown("""-----------------------------------------""")
-                gr.Markdown("""### Upload images and extract information ⚙️""")
-                with gr.Row():
-                    with gr.Column():
-                        # Create a hidden textbox for model_name
-                        model_input = gr.Textbox(value=model_name, visible=False)
-                        max_img_size_input = gr.Number(
-                            value=max_img_size,
-                            visible=False,
-                        )
-                        interface = gr.Interface(
-                            fn=extract_information,
-                            inputs=[
-                                gr.Gallery(label="Upload images", preview=True),
-                                model_input,
-                                max_img_size_input,
-                            ],
-                            outputs=[
-                                gr.Dataframe(
-                                    label="Extracted Information",
-                                    wrap=True,
-                                    interactive=False,
-                                    column_widths=["100px", "140px", "70px"],
-                                ),
-                                gr.Dataframe(
-                                    label="Extracted Tables",
-                                    wrap=True,
-                                    interactive=False,
-                                ),
-                            ],
-                            flagging_mode="never",
-                        )
+                model_input = gr.Textbox(value=model_name, visible=False)
+                max_img_size_input = gr.Number(
+                    value=max_img_size,
+                    visible=False,
+                )
+                define_keys_and_extract(model_input, max_img_size_input)
 
         demo.launch(
-            auth=("admin", "admin"),
-            share=True,
+            # auth=("admin", "admin"),
+            share=False,
             server_name="0.0.0.0",
             server_port=gradio_port,
         )
