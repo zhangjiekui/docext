@@ -71,7 +71,7 @@ def add_predefined_fields(doc_type):
     return update_fields_display()
 
 
-def define_keys_and_extract(model_name: str, max_img_size: int):
+def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limit: int):
     gr.Markdown(
         """### Add all the fields you want to extract information from the documents
         - Add a field by clicking the **`Add Field`** button. Description is optional.
@@ -152,10 +152,16 @@ def define_keys_and_extract(model_name: str, max_img_size: int):
         extract_information,
         [images_input, model_name, max_img_size, fields_display],
         [extracted_fields_output, extracted_tables_output],
+        concurrency_limit=concurrency_limit,
     )
 
 
-def gradio_app(model_name: str, gradio_port: int, max_img_size: int):
+def gradio_app(
+    model_name: str,
+    gradio_port: int,
+    max_img_size: int,
+    concurrency_limit: int,
+):
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
@@ -173,11 +179,15 @@ def gradio_app(model_name: str, gradio_port: int, max_img_size: int):
                     value=max_img_size,
                     visible=False,
                 )
-                define_keys_and_extract(model_input, max_img_size_input)
+                define_keys_and_extract(
+                    model_input,
+                    max_img_size_input,
+                    concurrency_limit,
+                )
 
         demo.launch(
-            # auth=("admin", "admin"),
-            share=False,
+            auth=("admin", "admin"),
+            share=True,
             server_name="0.0.0.0",
             server_port=gradio_port,
         )
@@ -193,6 +203,7 @@ def main(
     max_num_imgs: int,
     vllm_start_timeout: int,
     max_img_size: int,
+    concurrency_limit: int,
 ):
     vllm_server = VLLMServer(
         model_name=model_name,
@@ -216,7 +227,7 @@ def main(
     )
 
     try:
-        gradio_app(model_name, gradio_port, max_img_size)
+        gradio_app(model_name, gradio_port, max_img_size, concurrency_limit)
     except KeyboardInterrupt:
         cleanup(None, None, vllm_server)
         pass
@@ -239,6 +250,7 @@ def docext_app():
         args.max_num_imgs,
         args.vllm_start_timeout,
         args.max_img_size,
+        args.concurrency_limit,
     )
 
 

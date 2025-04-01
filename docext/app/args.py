@@ -73,4 +73,10 @@ def parse_args():
         default=2048,
         help="Maximum size of the image to process. Use 1024 for low memory devices.",
     )
+    parser.add_argument(
+        "--concurrency_limit",
+        type=int,
+        default=1,
+        help="Maximum number of concurrent requests. Increase this value if you want to process more requests in parallel.",
+    )
     return parser.parse_args()

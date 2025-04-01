@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Dict
 from typing import Union
 
 import json_repair
@@ -22,6 +23,8 @@ def extract_fields_from_documents(
     model_name: str,
     fields: list[dict],
 ):
+    if len(fields) == 0:
+        return pd.DataFrame()
     field_names = [field["name"] for field in fields]
     fields_description = [field.get("description", "") for field in fields]
     messages = get_fields_messages(field_names, fields_description, file_paths)
@@ -55,6 +58,8 @@ def extract_tables_from_documents(
     model_name: str,
     columns: list[dict],
 ):
+    if len(columns) == 0:
+        return pd.DataFrame()
     columns_names = [column["name"] for column in columns if column["type"] == "table"]
     columns_description = [
         column.get("description", "") for column in columns if column["type"] == "table"
@@ -74,7 +79,7 @@ def extract_information(
     file_inputs: list[str],
     model_name: str,
     max_img_size: int,
-    fields_and_tables: dict | pd.DataFrame,
+    fields_and_tables: dict[str, list[dict]] | pd.DataFrame,
 ):
     fields_and_tables = validate_fields_and_tables(fields_and_tables)
     if len(fields_and_tables["fields"]) == 0 and len(fields_and_tables["tables"]) == 0:
