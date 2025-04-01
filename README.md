@@ -32,6 +32,9 @@ cd docext
 pip install -e .
 ```
 
+## Quickstart
+- [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
+
 ## Web Interface
 
 docext includes a Gradio-based web interface for easy document processing:
