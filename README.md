@@ -44,9 +44,96 @@ python -m docext.app.app
 python -m docext.app.app --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
 ```
 
-The interface will be available at http://localhost:7861 with default credentials:
-- Username: admin
-- Password: admin
+The interface will be available at `http://localhost:7861` with default credentials:
+
+- Username: `admin`
+- Password: `admin`
+
+## API access
+
+docext also provides a REST API for programmatic access to the document extraction functionality.
+1. start the API server
+```bash
+python -m docext.app.app --concurrency_limit 10 # increase the concurrency limit to process more requests in parallel, default is 1
+```
+
+2. use the API to extract information from a document
+```python
+import pandas as pd
+import concurrent.futures
+from gradio_client import Client, handle_file
+
+
+def dataframe_to_custom_dict(df: pd.DataFrame) -> dict:
+    return {
+        "headers": df.columns.tolist(),
+        "data": df.values.tolist(),
+        "metadata": None  # Modify if metadata is needed
+    }
+
+def dict_to_dataframe(d: dict) -> pd.DataFrame:
+    return pd.DataFrame(d["data"], columns=d["headers"])
+
+
+def get_extracted_fields_and_tables(
+    client_url: str,
+    username: str,
+    password: str,
+    model_name: str,
+    fields_and_tables: dict,
+    file_inputs: list[dict]
+):
+    client = Client(client_url, auth=(username, password))
+    result = client.predict(
+        file_inputs=file_inputs,
+        model_name=model_name,
+        fields_and_tables=fields_and_tables,
+        api_name="/extract_information"
+    )
+    fields_results, tables_results = result
+    fields_df = dict_to_dataframe(fields_results)
+    tables_df = dict_to_dataframe(tables_results)
+    return fields_df, tables_df
+
+
+fields_and_tables = dataframe_to_custom_dict(pd.DataFrame([
+    {"name": "invoice_number", "type": "field", "description": "Invoice number"},
+    {"name": "item_description", "type": "table", "description": "Item/Product description"}
+
+]))
+
+file_inputs = [
+    {"image": {"path": "/home/paperspace/projects/growth/docext/invoice.jpeg"}}
+]
+
+## send single request
+fields_df, tables_df = get_extracted_fields_and_tables(
+    "http://localhost:7860", "admin", "admin", "Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+)
+print("========Fields:=========")
+print(fields_df)
+print("========Tables:=========")
+print(tables_df)
+
+
+## send multiple requests in parallel
+# Define a wrapper function for parallel execution
+def run_request():
+    return get_extracted_fields_and_tables(
+        "http://localhost:7860", "admin", "admin", "Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+    )
+
+# Use ThreadPoolExecutor to send 10 requests in parallel
+with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    future_results = [executor.submit(run_request) for _ in range(10)]
+
+    for future in concurrent.futures.as_completed(future_results):
+        fields_df, tables_df = future.result()
+        print("========Fields:=========")
+        print(fields_df)
+        print("========Tables:=========")
+        print(tables_df)
+```
 
 ## Requirements
 
@@ -77,3 +164,19 @@ We welcome contributions! Please see [contribution.md](contribution.md) for guid
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+list[
+  dict(
+    image: dict(
+      path: str | None (Path to a local file),
+      url: str | None (Publicly available url or base64 encoded image),
+      size: int | None (Size of image in bytes),
+      orig_name: str | None (Original filename),
+      mime_type: str | None (mime type of image),
+      is_stream: bool (Can always be set to False),
+      meta: dict()
+    ),
+    caption: str | None
+  )
+]
