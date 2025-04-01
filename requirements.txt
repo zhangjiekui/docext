@@ -10,4 +10,4 @@ requests
 setuptools
 tabulate
 types-requests
-vllm==v0.8.1
+vllm==v0.8.2
