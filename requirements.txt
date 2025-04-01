@@ -1,5 +1,4 @@
 accelerate
-flash-attn
 gradio
 json-repair
 loguru
