@@ -1,5 +1,5 @@
 accelerate
-gradio
+gradio==5.23.2
 json-repair
 loguru
 mdpd
