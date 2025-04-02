@@ -110,7 +110,10 @@ fields_and_tables = dataframe_to_custom_dict(pd.DataFrame([
 ]))
 
 file_inputs = [
-    {"image": {"path": "assets/invoice_test.jpeg"}}
+    {
+        # "image": handle_file("https://your_image_url/invoice.jpg") # incase the image is hosted on the internet
+        "image": handle_file("assets/invoice_test.jpeg") # incase the image is hosted on the local machine
+    }
 ]
 
 ## send single request
