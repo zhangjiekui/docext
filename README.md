@@ -50,7 +50,7 @@ python -m docext.app.app
 python -m docext.app.app --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
 ```
 
-The interface will be available at `http://localhost:7861` with default credentials:
+The interface will be available at `http://localhost:7860` with default credentials: (You can change the port by using `--ui_port` flag)
 
 - Username: `admin`
 - Password: `admin`
@@ -154,7 +154,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 
 ## Models
 
-docext uses vision-language models for document understanding. By default, it uses: Qwen/Qwen2.5-VL-7B-Instruct-AWQ
+docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ`
 
 Recommended models based on GPU memory:
 | Model | GPU Memory |
