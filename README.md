@@ -106,7 +106,7 @@ def get_extracted_fields_and_tables(
 fields_and_tables = dataframe_to_custom_dict(pd.DataFrame([
     {"name": "invoice_number", "type": "field", "description": "Invoice number"},
     {"name": "item_description", "type": "table", "description": "Item/Product description"}
-
+    # add more fields and table columns as needed
 ]))
 
 file_inputs = [
