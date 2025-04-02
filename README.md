@@ -17,6 +17,7 @@ docext is a powerful tool for extracting structured information from documents s
 - **Confidence scoring**: Get confidence levels for extracted information
 - **On-premises deployment**: Run entirely on your own infrastructure
 - **Multi-page support**: Process documents with multiple pages
+- **REST API**: Programmatic access for integration with your applications
 - **Pre-built templates**: Ready-to-use templates for common document types:
   - Invoices
   - Passports
