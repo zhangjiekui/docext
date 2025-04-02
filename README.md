@@ -23,6 +23,9 @@ docext is a powerful tool for extracting structured information from documents s
   - Passports
   - Create your own templates
 
+## Quickstart
+- [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
+
 ## Installation
 
 ```bash
@@ -34,9 +37,6 @@ git clone https://github.com/nanonets/docext.git
 cd docext
 pip install -e .
 ```
-
-## Quickstart
-- [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
 
 ## Web Interface
 
