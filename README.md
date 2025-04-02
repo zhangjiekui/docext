@@ -110,11 +110,11 @@ fields_and_tables = dataframe_to_custom_dict(pd.DataFrame([
 ]))
 
 file_inputs = [
-    {"image": {"path": "/home/paperspace/projects/growth/docext/invoice.jpeg"}}
+    {"image": {"path": "assets/invoice_test.jpeg"}}
 ]
 
 ## send single request
-### client url can be the local host or the public url like `https://6986bdd23daef6f7eb.gradio.live`
+### client url can be the local host or the public url like `https://6986bdd23daef6f7eb.gradio.live/`
 fields_df, tables_df = get_extracted_fields_and_tables(
     "http://localhost:7860", "admin", "admin", "Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
 )
