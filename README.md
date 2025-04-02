@@ -29,6 +29,10 @@ docext is a powerful tool for extracting structured information from documents s
 ## Installation
 
 ```bash
+# create a virtual environment
+python -m venv docext-env
+source docext-env/bin/activate
+
 # Install from PyPI
 pip install docext
 
