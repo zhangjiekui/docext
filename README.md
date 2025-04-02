@@ -2,6 +2,8 @@
 
 An on-premises document information extraction tool powered by vision-language models.
 
+![Demo](assets/demo.png)
+
 ## Overview
 
 docext is a powerful tool for extracting structured information from documents such as invoices, passports, and other forms. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
@@ -169,4 +171,4 @@ If you have a feature request or need support for a new model, feel free to open
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
