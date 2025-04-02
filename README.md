@@ -32,6 +32,7 @@ docext is a powerful tool for extracting structured information from documents s
 # create a virtual environment
 ## install uv if not installed
 curl -LsSf https://astral.sh/uv/install.sh | sh
+## create a virtual environment with python 3.11
 uv venv --python=3.11
 source .venv/bin/activate
 
