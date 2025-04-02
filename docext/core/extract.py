@@ -81,7 +81,6 @@ def extract_information(
     max_img_size: int,
     fields_and_tables: dict[str, list[dict]] | pd.DataFrame,
 ):
-    breakpoint()
     fields_and_tables = validate_fields_and_tables(fields_and_tables)
     if len(fields_and_tables["fields"]) == 0 and len(fields_and_tables["tables"]) == 0:
         return pd.DataFrame(), pd.DataFrame()
