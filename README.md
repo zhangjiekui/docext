@@ -182,7 +182,7 @@ docker run --rm \
   --network host \
   --shm-size=20.24gb \
   --gpus all \
-  docext:v0.1.2 --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  nanonetsopensource/docext:v0.1.2 --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 ```
 
 ## About
@@ -192,7 +192,7 @@ docext is developed by [Nanonets](https://nanonets.com), a leader in document AI
 ## Contributing
 
 We welcome contributions! Please see [contribution.md](contribution.md) for guidelines.
-If you have a feature request or need support for a new model, feel free to open an issue—we’d love to discuss it further!
+If you have a feature request or need support for a new model, feel free to open an issue—we'd love to discuss it further!
 
 ## Troubleshooting
 
