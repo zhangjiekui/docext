@@ -179,10 +179,10 @@ Recommended models based on GPU memory:
 docker run --rm \
   --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
   -v ~/.cache/huggingface:/root/.cache/huggingface \
-  -p 7860:7860 \
-  --ipc=host \
+  --network host \
+  --shm-size=20.24gb \
   --gpus all \
-  docext:v0.1.2
+  docext:v0.1.2 --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 ```
 
 ## About
