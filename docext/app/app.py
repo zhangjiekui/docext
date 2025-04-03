@@ -135,13 +135,13 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
             submit_btn = gr.Button("Submit")
 
     with gr.Row():
-        with gr.Column(scale=0.3):
+        with gr.Column(scale=3):
             extracted_fields_output = gr.Dataframe(
                 label="Extracted Fields",
                 wrap=True,
                 interactive=False,
             )
-        with gr.Column(scale=0.7):
+        with gr.Column(scale=7):
             extracted_tables_output = gr.Dataframe(
                 label="Extracted Tables",
                 wrap=True,
