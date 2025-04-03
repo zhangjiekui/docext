@@ -25,6 +25,7 @@ docext is a powerful tool for extracting structured information from documents s
 
 ## Quickstart
 - [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
+- [Docker](#Docker)
 
 ## Installation
 
@@ -170,6 +171,19 @@ Recommended models based on GPU memory:
 | Qwen/Qwen2.5-VL-7B-Instruct | 24GB |
 | Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB |
 | Qwen/Qwen2.5-VL-32B-Instruct | 80 GB |
+
+## Docker
+1. Add your [huggingface token](https://huggingface.co/docs/hub/en/security-tokens) to the environment variable. Not needed if you are using the default model.
+2. Utilize all available GPUs or specify a particular one as needed (e.g., --gpus '"device=0"'). CPU mode is not supported; for trying out the app, we recommend using Google Colab, which offers free GPU access.
+```bash
+docker run --rm \
+  --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -p 7860:7860 \
+  --ipc=host \
+  --gpus all \
+  docext:v0.1.2
+```
 
 ## About
 
