@@ -161,6 +161,7 @@ def gradio_app(
     gradio_port: int,
     max_img_size: int,
     concurrency_limit: int,
+    share: bool,
 ):
     with gr.Blocks() as demo:
         with gr.Tabs():
@@ -187,7 +188,7 @@ def gradio_app(
 
         demo.launch(
             auth=("admin", "admin"),
-            share=True,
+            share=not share,
             server_name="0.0.0.0",
             server_port=gradio_port,
         )
@@ -204,6 +205,7 @@ def main(
     vllm_start_timeout: int,
     max_img_size: int,
     concurrency_limit: int,
+    share: bool,
 ):
     vllm_server = VLLMServer(
         model_name=model_name,
@@ -227,7 +229,7 @@ def main(
     )
 
     try:
-        gradio_app(model_name, gradio_port, max_img_size, concurrency_limit)
+        gradio_app(model_name, gradio_port, max_img_size, concurrency_limit, share)
     except KeyboardInterrupt:
         cleanup(None, None, vllm_server)
         pass
@@ -251,6 +253,7 @@ def docext_app():
         args.vllm_start_timeout,
         args.max_img_size,
         args.concurrency_limit,
+        args.share,
     )
 
 

@@ -56,10 +56,10 @@ def parse_args():
         help="Timeout for the vLLM server to start.",
     )
     parser.add_argument(
-        "--share",
-        type=bool,
-        default=True,
-        help="Whether to share the UI on the web.",
+        "--no-share",
+        action="store_true",
+        dest="share",  # This will set 'share' to False when --no-share is used
+        help="Disable sharing of the UI on the web.",
     )
     parser.add_argument(
         "--log_level",
