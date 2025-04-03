@@ -194,6 +194,11 @@ docext is developed by [Nanonets](https://nanonets.com), a leader in document AI
 We welcome contributions! Please see [contribution.md](contribution.md) for guidelines.
 If you have a feature request or need support for a new model, feel free to open an issue—we’d love to discuss it further!
 
+## Troubleshooting
+
+If you encounter any issues while using `docext`, please refer to our [Troubleshooting guide](Troubleshooting.md) for common problems and solutions.
+
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
