@@ -8,6 +8,9 @@ RUN apt-get update -y && \
 # Ensure Python 3.11 is default
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python && ln -sf /usr/bin/python3.11 /usr/bin/python3
 
+EXPOSE 7860
+ENV GRADIO_SERVER_NAME="0.0.0.0"
+
 WORKDIR /app
 
 # Activate virtual environment and install dependencies
@@ -26,4 +29,4 @@ RUN pip install --no-cache-dir flash-attn --no-build-isolation
 
 # Set working directory and entrypoint
 WORKDIR /app/docext
-ENTRYPOINT ["python", "-m", "docext.app.app"]
+ENTRYPOINT ["python", "-m", "docext.app.app", "--no-share", "--ui_port", "7860"]

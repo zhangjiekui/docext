@@ -185,7 +185,7 @@ def gradio_app(
                     max_img_size_input,
                     concurrency_limit,
                 )
-
+        logger.info(f"Launching gradio app on port {gradio_port}")
         demo.launch(
             auth=("admin", "admin"),
             share=not share,
