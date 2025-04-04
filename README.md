@@ -21,7 +21,7 @@ docext is a powerful tool for extracting structured information from documents s
 - **Pre-built templates**: Ready-to-use templates for common document types:
   - Invoices
   - Passports
-  - Create your own templates
+  - Add/delete new fields/columns for other templates.
 
 ## Quickstart
 - [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
