@@ -14,7 +14,7 @@
   </a>
 </p>
 
-![Demo](assets/demo.png)
+![Demo](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png)
 
 ## Overview
 
