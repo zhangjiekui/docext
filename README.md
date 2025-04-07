@@ -37,7 +37,7 @@ docext is a powerful tool for extracting structured information from documents s
 
 ## Quickstart
 - [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
-- [Docker](#Docker)
+- [Docker](https://github.com/NanoNets/docext/blob/main/README.md#Docker)
 
 ## Installation
 
@@ -203,12 +203,12 @@ docext is developed by [Nanonets](https://nanonets.com), a leader in document AI
 
 ## Contributing
 
-We welcome contributions! Please see [contribution.md](contribution.md) for guidelines.
+We welcome contributions! Please see [contribution.md](https://github.com/NanoNets/docext/blob/main/contribution.md) for guidelines.
 If you have a feature request or need support for a new model, feel free to open an issue—we'd love to discuss it further!
 
 ## Troubleshooting
 
-If you encounter any issues while using `docext`, please refer to our [Troubleshooting guide](Troubleshooting.md) for common problems and solutions.
+If you encounter any issues while using `docext`, please refer to our [Troubleshooting guide](https://github.com/NanoNets/docext/blob/main/Troubleshooting.md) for common problems and solutions.
 
 
 ## License
