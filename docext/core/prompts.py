@@ -87,19 +87,3 @@ def get_tables_messages(
         },
     ]
     return messages
-
-
-def get_fields_confidence_score_messages(
-    messages: list[dict],
-    assistant_response: str,
-    fields: list[str],
-) -> list[dict]:
-    messages.append({"role": "assistant", "content": assistant_response})
-    output_format = {field: "High/Low" for field in fields}
-    messages.append(
-        {
-            "role": "user",
-            "content": f"For each field mentioned in the above answer, return 'High' if the extracted answer for the field is 100% correct and 'Low' otherwise. Return the result in the following JSON format: {output_format}. Do not give any explanation. If you are unsure about a field, return 'Low'",
-        },
-    )
-    return messages

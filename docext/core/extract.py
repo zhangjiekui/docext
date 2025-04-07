@@ -10,7 +10,7 @@ import pandas as pd
 from loguru import logger
 
 from docext.core.client import sync_request
-from docext.core.prompts import get_fields_confidence_score_messages
+from docext.core.confidence import get_fields_confidence_score_messages_binary
 from docext.core.prompts import get_fields_messages
 from docext.core.prompts import get_tables_messages
 from docext.core.utils import resize_images
@@ -34,7 +34,11 @@ def extract_fields_from_documents(
     logger.info(f"Response: {response}")
 
     # conf score
-    messages = get_fields_confidence_score_messages(messages, response, field_names)
+    messages = get_fields_confidence_score_messages_binary(
+        messages,
+        response,
+        field_names,
+    )
     response_conf_score = sync_request(messages, model_name)["choices"][0]["message"][
         "content"
     ]
