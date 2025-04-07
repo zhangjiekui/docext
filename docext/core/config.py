@@ -1,6 +1,15 @@
 from __future__ import annotations
 
 TEMPLATES_FIELDS = {
+    "invoice colab demo 🧾": [
+        {"field_name": "invoice_number", "description": "Invoice number"},
+        {"field_name": "invoice_date", "description": "Invoice date"},
+        {"field_name": "invoice_amount", "description": "Invoice amount"},
+        {
+            "field_name": "seller_name",
+            "description": "Seller name. If not explicitly mentioned, return ''",
+        },
+    ],
     "invoice 🧾": [
         {"field_name": "invoice_number", "description": "Invoice number"},
         {"field_name": "invoice_date", "description": "Invoice date"},
@@ -46,6 +55,13 @@ TEMPLATES_FIELDS = {
 }
 
 TEMPLATES_TABLES = {
+    "invoice colab demo 🧾": [
+        {
+            "field_name": "items_description",
+            "description": "Description of the product",
+        },
+        {"field_name": "Unit Price", "description": "Unit price of the product"},
+    ],
     "invoice 🧾": [
         {"field_name": "Quantity", "description": "Total quantity of the product"},
         {
