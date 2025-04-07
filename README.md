@@ -12,6 +12,9 @@
   <a href="https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" />
   </a>
+  <a>
+    <img alt="PyPI - Version" src="https://img.shields.io/pypi/v/docext">
+  </a>
 </p>
 
 ![Demo](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png)
