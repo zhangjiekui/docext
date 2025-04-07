@@ -100,7 +100,12 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
         add_btn = gr.Button("Add Field/Column ✚")
         clear_btn = gr.Button("Clear All Fields/Columns ❌")
 
-    fields_display = gr.Dataframe(label="Fields/Columns", wrap=True, interactive=False)
+    fields_display = gr.Dataframe(
+        label="Fields/Columns",
+        wrap=True,
+        interactive=False,
+        headers=["index", "type", "name", "description"],
+    )
 
     gr.Markdown("""#### Remove a field/column""")
     with gr.Row():
@@ -140,12 +145,14 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
                 label="Extracted Fields",
                 wrap=True,
                 interactive=False,
+                headers=["fields", "answer", "confidence"],
             )
         with gr.Column(scale=7):
             extracted_tables_output = gr.Dataframe(
                 label="Extracted Tables",
                 wrap=True,
                 interactive=False,
+                headers=["col1", "col2", "coln"],
             )
 
     submit_btn.click(
