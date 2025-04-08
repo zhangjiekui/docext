@@ -71,7 +71,7 @@ docext includes a Gradio-based web interface for easy document processing:
 python -m docext.app.app
 
 # Start the web interface with custom configs
-python -m docext.app.app --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
+python -m docext.app.app --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
 ```
 
 The interface will be available at `http://localhost:7860` with default credentials: (You can change the port by using `--ui_port` flag)
@@ -143,7 +143,7 @@ file_inputs = [
 ## send single request
 ### client url can be the local host or the public url like `https://6986bdd23daef6f7eb.gradio.live/`
 fields_df, tables_df = get_extracted_fields_and_tables(
-    "http://localhost:7860", "admin", "admin", "Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+    "http://localhost:7860", "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
 )
 print("========Fields:=========")
 print(fields_df)
@@ -155,7 +155,7 @@ print(tables_df)
 # Define a wrapper function for parallel execution
 def run_request():
     return get_extracted_fields_and_tables(
-        "http://localhost:7860", "admin", "admin", "Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+        "http://localhost:7860", "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
     )
 
 # Use ThreadPoolExecutor to send 10 requests in parallel
