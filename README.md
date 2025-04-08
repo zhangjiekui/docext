@@ -40,7 +40,7 @@ docext is a powerful tool for extracting structured information from documents s
 
 ## Quickstart
 - [Colab notebook for onprem deployment](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
-- [Colab notebook for vendor-hosted models](https://colab.research.google.com/drive/1yBnDv_1mZEuNtSMEYc8INGG0Z3UoLakD?usp=sharing)
+- [Colab notebook for vendor-hosted models (openai, anthropic, openrouter)](https://colab.research.google.com/drive/1yBnDv_1mZEuNtSMEYc8INGG0Z3UoLakD?usp=sharing)
 - [Docker](https://github.com/NanoNets/docext/blob/main/README.md#Docker)
 
 ## Installation
