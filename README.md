@@ -180,12 +180,29 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ`
 
 Recommended models based on GPU memory:
-| Model | GPU Memory |
-|-------|------------|
-| Qwen/Qwen2.5-VL-7B-Instruct-AWQ | 16GB |
-| Qwen/Qwen2.5-VL-7B-Instruct | 24GB |
-| Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB |
-| Qwen/Qwen2.5-VL-32B-Instruct | 80 GB |
+| Model | GPU Memory | `--model_name` |
+|-------|------------|--------------|
+| Qwen/Qwen2.5-VL-7B-Instruct-AWQ | 16GB | `hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ` |
+| Qwen/Qwen2.5-VL-7B-Instruct | 24GB | `hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct` |
+| Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ` |
+| Qwen/Qwen2.5-VL-32B-Instruct | 80 GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct` |
+
+## Supported Cloud-Based Models
+
+docext supports integration with various cloud-based vision-language models. **Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
+
+| Provider | Model Examples | Environment Variable | Usage Example |
+|----------|---------------|---------------------|---------------|
+| OpenAI | GPT-4V, GPT-4V-mini | `OPENAI_API_KEY` | `--model_name gpt-4v` |
+| Anthropic | Claude 3 Sonnet | `ANTHROPIC_API_KEY` | `--model_name claude-3-sonnet-20240229` |
+| OpenRouter | Meta Llama models | `OPENROUTER_API_KEY` | `--model_name openrouter/meta-llama/llama-4-maverick:free` |
+| Google | gemini-2.0-flash | `GEMINI_API_KEY` | `--model_name gemini/gemini-2.0-flash` |
+
+Example usage:
+```bash
+export OPENROUTER_API_KEY=sk-...
+python -m docext.app.app --model_name "openrouter/meta-llama/llama-4-maverick:free"
+```
 
 ## Docker
 1. Add your [huggingface token](https://huggingface.co/docs/hub/en/security-tokens) to the environment variable. Not needed if you are using the default model.
