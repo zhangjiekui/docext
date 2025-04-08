@@ -214,35 +214,39 @@ def main(
     concurrency_limit: int,
     share: bool,
 ):
-    vllm_server = VLLMServer(
-        model_name=model_name,
-        host=host,
-        port=port,
-        max_model_len=max_model_len,
-        gpu_memory_utilization=gpu_memory_utilization,
-        max_num_imgs=max_num_imgs,
-        vllm_start_timeout=vllm_start_timeout,
-    )
-    vllm_server.run_in_background()
+    vllm_server = None
+    if model_name.startswith("hosted_vllm/"):
+        vllm_server = VLLMServer(
+            model_name=model_name,
+            host=host,
+            port=port,
+            max_model_len=max_model_len,
+            gpu_memory_utilization=gpu_memory_utilization,
+            max_num_imgs=max_num_imgs,
+            vllm_start_timeout=vllm_start_timeout,
+        )
+        vllm_server.run_in_background()
 
-    # Handle termination signals to stop the server gracefully
-    signal.signal(
-        signal.SIGINT,
-        lambda signum, frame: cleanup(signum, frame, vllm_server),
-    )
-    signal.signal(
-        signal.SIGTERM,
-        lambda signum, frame: cleanup(signum, frame, vllm_server),
-    )
+        # Handle termination signals to stop the server gracefully
+        signal.signal(
+            signal.SIGINT,
+            lambda signum, frame: cleanup(signum, frame, vllm_server),
+        )
+        signal.signal(
+            signal.SIGTERM,
+            lambda signum, frame: cleanup(signum, frame, vllm_server),
+        )
+
+        logger.info(f"Using local model. Current model: {model_name}")
+    else:
+        logger.info(f"Not using local model. Current model: {model_name}")
 
     try:
         gradio_app(model_name, gradio_port, max_img_size, concurrency_limit, share)
-    except KeyboardInterrupt:
-        cleanup(None, None, vllm_server)
-        pass
-    except Exception as e:
+    except (KeyboardInterrupt, Exception) as e:
+        if vllm_server:
+            cleanup(None, None, vllm_server)
         logger.error(f"Error: {e}")
-        cleanup(None, None, vllm_server)
 
 
 def docext_app():

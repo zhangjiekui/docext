@@ -1,6 +1,7 @@
 accelerate
 gradio==5.23.2
 json-repair
+litellm
 loguru
 mdpd
 pandas

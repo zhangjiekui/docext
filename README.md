@@ -39,7 +39,8 @@ docext is a powerful tool for extracting structured information from documents s
   - Add/delete new fields/columns for other templates.
 
 ## Quickstart
-- [Colab notebook](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
+- [Colab notebook for onprem deployment](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
+- [Colab notebook for vendor-hosted models (openai, anthropic, openrouter)](https://colab.research.google.com/drive/1yBnDv_1mZEuNtSMEYc8INGG0Z3UoLakD?usp=sharing)
 - [Docker](https://github.com/NanoNets/docext/blob/main/README.md#Docker)
 
 ## Installation
@@ -180,12 +181,29 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ`
 
 Recommended models based on GPU memory:
-| Model | GPU Memory |
-|-------|------------|
-| Qwen/Qwen2.5-VL-7B-Instruct-AWQ | 16GB |
-| Qwen/Qwen2.5-VL-7B-Instruct | 24GB |
-| Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB |
-| Qwen/Qwen2.5-VL-32B-Instruct | 80 GB |
+| Model | GPU Memory | `--model_name` |
+|-------|------------|--------------|
+| Qwen/Qwen2.5-VL-7B-Instruct-AWQ | 16GB | `hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ` |
+| Qwen/Qwen2.5-VL-7B-Instruct | 24GB | `hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct` |
+| Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ` |
+| Qwen/Qwen2.5-VL-32B-Instruct | 80 GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct` |
+
+## Supported Vendor-Hosted Models
+
+docext supports integration with various cloud-based vision-language models. **Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
+
+| Provider | Model Examples | Environment Variable | Usage Example |
+|----------|---------------|---------------------|---------------|
+| OpenAI | gpt-4o | `OPENAI_API_KEY` | `--model_name gpt-4o` |
+| Anthropic | Claude 3 Sonnet | `ANTHROPIC_API_KEY` | `--model_name claude-3-sonnet-20240229` |
+| OpenRouter | Meta Llama models | `OPENROUTER_API_KEY` | `--model_name openrouter/meta-llama/llama-4-maverick:free` |
+| Google | gemini-2.0-flash | `GEMINI_API_KEY` | `--model_name gemini/gemini-2.0-flash` |
+
+Example usage:
+```bash
+export OPENROUTER_API_KEY=sk-...
+python -m docext.app.app --model_name "openrouter/meta-llama/llama-4-maverick:free"
+```
 
 ## Docker
 1. Add your [huggingface token](https://huggingface.co/docs/hub/en/security-tokens) to the environment variable. Not needed if you are using the default model.
@@ -197,7 +215,14 @@ docker run --rm \
   --network host \
   --shm-size=20.24gb \
   --gpus all \
-  nanonetsopensource/docext:v0.1.2 --model_name "Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  nanonetsopensource/docext:v0.1.7 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+```
+3. If you are using vendor-hosted models, you can use the following command:
+```bash
+docker run --rm \
+  --env "OPENROUTER_API_KEY=<secret>" \
+  --network host \
+  nanonetsopensource/docext:v0.1.7 --model_name "openrouter/meta-llama/llama-4-maverick:free"
 ```
 
 ## About

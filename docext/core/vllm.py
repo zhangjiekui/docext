@@ -39,7 +39,7 @@ class VLLMServer:
         command = [
             "vllm",
             "serve",
-            self.model_name,
+            self.model_name.replace("hosted_vllm/", ""),
             "--host",
             self.host,
             "--port",
@@ -49,7 +49,7 @@ class VLLMServer:
             "--limit-mm-per-prompt",
             f"image={self.max_num_imgs},video=0",
             "--served-model-name",
-            self.model_name,
+            self.model_name.replace("hosted_vllm/", ""),
             "--max-model-len",
             str(self.max_model_len),
             "--gpu-memory-utilization",
