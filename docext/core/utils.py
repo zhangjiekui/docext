@@ -64,4 +64,5 @@ def validate_file_paths(file_paths: list[str]):
             ".tiff",
             ".bmp",
             ".gif",
+            ".webp",
         ], f"File {file_path} is not an image"
