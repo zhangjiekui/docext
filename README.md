@@ -210,12 +210,12 @@ python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AW
 
 ```bash
 # You can use the ollama server running on your local machine
-python -m docext.app.app --model_name ollama/llama3.2-vision --vlm_server_port 11434
+python -m docext.app.app --model_name ollama/llama3.2-vision --max_img_size 1024
 
 # incase you have a ollama server running on ip <your_ip> and port <your_port>
-python -m docext.app.app --model_name ollama/llama3.2-vision --vlm_server_host <your_ip> --vlm_server_port <your_port>
+python -m docext.app.app --model_name ollama/llama3.2-vision --max_img_size 1024 --vlm_server_host <your_ip> --vlm_server_port <your_port>
 ```
-If you have a machine with low GPU memory, change the `--max_img_size` to 1024.
+If you have a machine with GPU >= 16GB, change the `--max_img_size` to 2048.
 
 ### Supported Vendor-Hosted Models
 
