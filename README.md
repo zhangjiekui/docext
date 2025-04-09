@@ -61,6 +61,7 @@ git clone https://github.com/nanonets/docext.git
 cd docext
 uv pip install -e .
 ```
+Check [Supported Models](https://github.com/NanoNets/docext/blob/main/README.md#Supported-Models) section for more options.
 
 ## Web Interface
 
@@ -176,9 +177,10 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 - CUDA-compatible GPU (for optimal performance). Use Google Colab for free GPU access.
 - Dependencies listed in requirements.txt
 
-## Models
+## Supported Models
+### Models with vLLM
 
-docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ`
+docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` but you can use any other models supported by vLLM.
 
 Recommended models based on GPU memory:
 | Model | GPU Memory | `--model_name` |
@@ -188,7 +190,33 @@ Recommended models based on GPU memory:
 | Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ` |
 | Qwen/Qwen2.5-VL-32B-Instruct | 80 GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct` |
 
-## Supported Vendor-Hosted Models
+```bash
+# will download the default model (Qwen/Qwen2.5-VL-7B-Instruct-AWQ) and host it on your local machine with vLLM on port 8000
+python -m docext.app.app 
+
+# will download the model (Qwen/Qwen2.5-VL-32B-Instruct-AWQ) and host it on your local machine with vLLM on port 9000
+python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ --vlm_server_port 9000
+
+# If you already have a vLLM server running on ip <your_ip> and port <your_port>, you can use the following command:
+python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ --vlm_server_host <your_ip> --vlm_server_port <your_port>
+```
+
+
+### Models with OLLAMA
+
+Install [ollama](https://ollama.com/download) in your machine and download the checkpoint `ollama pull llama3.2-vision`.
+Right now, docext only supports llama3.2-vision model with ollama.
+
+```bash
+# You can use the ollama server running on your local machine or any other machine.
+python -m docext.app.app --model_name ollama/llama3.2-vision --vlm_server_port 11434
+
+# incase you have a ollama server running on ip <your_ip> and port <your_port>
+python -m docext.app.app --model_name ollama/llama3.2-vision --vlm_server_host <your_ip> --vlm_server_port <your_port>
+```
+If you have a machine with low GPU memory, change the `--max_img_size` to 1024.
+
+### Supported Vendor-Hosted Models
 
 docext supports integration with various cloud-based vision-language models. **Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
 
