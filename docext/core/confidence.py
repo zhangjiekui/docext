@@ -11,7 +11,7 @@ def get_fields_confidence_score_messages_binary(
     messages.append(
         {
             "role": "user",
-            "content": f"For each field mentioned in the above answer, return 'High' if the extracted answer for the field is 100% correct and 'Low' otherwise. Return the result in the following JSON format: {output_format}. Do not give any explanation. If you are unsure about a field, return 'Low'",
+            "content": f"For each field mentioned in the above answer, return 'High' if the extracted answer for the field is 100% correct and 'Low' otherwise. Return the result in the following JSON format: {output_format}. Do not give any explanation.",
         },
     )
     return messages

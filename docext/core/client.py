@@ -3,10 +3,7 @@ from __future__ import annotations
 import os
 
 import requests
-from dotenv import load_dotenv
 from litellm import completion
-
-load_dotenv()
 
 
 def sync_request(
@@ -15,12 +12,15 @@ def sync_request(
     max_tokens: int = 5000,
     num_completions: int = 1,
 ):
-    vllm_url = os.getenv("VLLM_URL", "http://localhost:8000/v1/")
+    vlm_url = os.getenv("VLM_MODEL_URL", "")
+    if vlm_url == "":
+        raise ValueError("VLM_MODEL_URL is not set. Please set it to the URL of the VLM model.")
     response = completion(
         model=model_name,
         messages=messages,
         max_tokens=max_tokens,
         n=num_completions,
-        api_base=vllm_url if model_name.startswith("hosted_vllm/") else None,
+        temperature=0,
+        api_base=vlm_url if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/") else None,
     )
     return response.json()

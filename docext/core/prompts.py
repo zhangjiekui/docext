@@ -81,7 +81,7 @@ def get_tables_messages(
                 ],
                 {
                     "type": "text",
-                    "text": f"Return the table as an markdown table:\n {_get_tables_output_format(columns_names)}. If a cell is not found, return '' for that column. Do not give any explanation. If table is not found, return Empty Table with the column names.",
+                    "text": f"Return the table as an markdown table:\n {_get_tables_output_format(columns_names)}. If a cell is not found, return '' for that column. Do not give any explanation.",
                 },
             ],
         },
