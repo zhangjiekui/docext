@@ -178,7 +178,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 - Dependencies listed in requirements.txt
 
 ## Supported Models
-### Models with vLLM
+### Models with vLLM (Linux)
 
 docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` but you can use any other models supported by vLLM.
 
@@ -202,8 +202,8 @@ python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AW
 ```
 
 
-### Models with OLLAMA
-
+### Models with Ollama (Linux and MacOS)
+> Ollama is supported on Windows. But I have not tested it.
 1. Install [ollama](https://ollama.com/download) in your machine.
 2. Download the checkpoint `ollama pull llama3.2-vision`.
 3. Run the following command to start the ollama server.
