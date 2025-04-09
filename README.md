@@ -209,7 +209,7 @@ python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AW
 3. Run the following command to start the ollama server.
 
 ```bash
-# You can use the ollama server running on your local machine or any other machine.
+# You can use the ollama server running on your local machine
 python -m docext.app.app --model_name ollama/llama3.2-vision --vlm_server_port 11434
 
 # incase you have a ollama server running on ip <your_ip> and port <your_port>
