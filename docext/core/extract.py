@@ -74,7 +74,7 @@ def extract_tables_from_documents(
     response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
     logger.info(f"Response: {response}")
 
-    response = response[response.index("|"): response.rindex("|") + 1]
+    response = response[response.index("|") : response.rindex("|") + 1]
     df = mdpd.from_md(response)
 
     return df

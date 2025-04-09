@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from PIL import Image
 import requests
+from PIL import Image
+
 
 def cleanup(signum, frame, vllm_server):
     print("\nReceived exit signal. Stopping vLLM server...")
     vllm_server.stop_server()
     exit(0)
+
 
 def check_vllm_healthcheck(host: str, port: int):
     try:
@@ -14,6 +16,7 @@ def check_vllm_healthcheck(host: str, port: int):
         return response.status_code == 200
     except Exception as e:
         return False
+
 
 def check_ollama_healthcheck(host: str, port: int):
     try:

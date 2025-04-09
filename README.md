@@ -192,7 +192,7 @@ Recommended models based on GPU memory:
 
 ```bash
 # will download the default model (Qwen/Qwen2.5-VL-7B-Instruct-AWQ) and host it on your local machine with vLLM on port 8000
-python -m docext.app.app 
+python -m docext.app.app
 
 # will download the model (Qwen/Qwen2.5-VL-32B-Instruct-AWQ) and host it on your local machine with vLLM on port 9000
 python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ --vlm_server_port 9000

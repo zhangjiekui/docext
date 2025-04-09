@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-import signal
 import os
+import signal
 
 import gradio as gr
 import pandas as pd
 from loguru import logger
 
 from docext.app.args import parse_args
+from docext.app.utils import check_ollama_healthcheck
+from docext.app.utils import check_vllm_healthcheck
 from docext.app.utils import cleanup
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
 from docext.core.extract import extract_information
 from docext.core.vllm import VLLMServer
-from docext.app.utils import check_vllm_healthcheck
-from docext.app.utils import check_ollama_healthcheck
 
 METADATA = []
 
@@ -227,7 +227,9 @@ def main(
         if check_vllm_healthcheck(host, port):
             logger.info(f"vLLM server is running on {host}:{port}")
         else:
-            logger.error(f"vLLM server is not running on {host}:{port}. Starting vLLM server...")
+            logger.error(
+                f"vLLM server is not running on {host}:{port}. Starting vLLM server...",
+            )
             vllm_server = VLLMServer(
                 model_name=model_name,
                 host=host,
@@ -256,16 +258,28 @@ def main(
             logger.info(f"OLLAMA server is running on {host}:{port}")
         elif check_ollama_healthcheck("localhost", 11434):
             # common mistake, people forget to change the port for ollama server
-            logger.warning(f"OLLAMA server is running on localhost:11434. Changed the `--vlm_server_port` to 11434")
+            logger.warning(
+                f"OLLAMA server is running on localhost:11434. Changed the `--vlm_server_port` to 11434",
+            )
             port = 11434
         else:
-            logger.error(f"OLLAMA server is not running on {host}:{port}. Please install and start the server following the instructions in the Wiki.")
+            logger.error(
+                f"OLLAMA server is not running on {host}:{port}. Please install and start the server following the instructions in the Wiki.",
+            )
             exit(1)
     else:
         logger.info(f"Not using local model. Current model: {model_name}")
 
     try:
-        gradio_app(model_name, gradio_port, max_img_size, concurrency_limit, share, host, port)
+        gradio_app(
+            model_name,
+            gradio_port,
+            max_img_size,
+            concurrency_limit,
+            share,
+            host,
+            port,
+        )
     except (KeyboardInterrupt, Exception) as e:
         if vllm_server:
             cleanup(None, None, vllm_server)

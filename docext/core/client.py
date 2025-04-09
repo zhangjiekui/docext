@@ -14,13 +14,17 @@ def sync_request(
 ):
     vlm_url = os.getenv("VLM_MODEL_URL", "")
     if vlm_url == "":
-        raise ValueError("VLM_MODEL_URL is not set. Please set it to the URL of the VLM model.")
+        raise ValueError(
+            "VLM_MODEL_URL is not set. Please set it to the URL of the VLM model.",
+        )
     response = completion(
         model=model_name,
         messages=messages,
         max_tokens=max_tokens,
         n=num_completions,
         temperature=0,
-        api_base=vlm_url if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/") else None,
+        api_base=vlm_url
+        if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/")
+        else None,
     )
     return response.json()
