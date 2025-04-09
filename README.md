@@ -204,8 +204,9 @@ python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AW
 
 ### Models with OLLAMA
 
-Install [ollama](https://ollama.com/download) in your machine and download the checkpoint `ollama pull llama3.2-vision`.
-Right now, docext only supports llama3.2-vision model with ollama.
+1. Install [ollama](https://ollama.com/download) in your machine.
+2. Download the checkpoint `ollama pull llama3.2-vision`.
+3. Run the following command to start the ollama server.
 
 ```bash
 # You can use the ollama server running on your local machine or any other machine.
@@ -218,7 +219,9 @@ If you have a machine with low GPU memory, change the `--max_img_size` to 1024.
 
 ### Supported Vendor-Hosted Models
 
-docext supports integration with various cloud-based vision-language models. **Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
+docext supports integration with various cloud-based vision-language models.
+
+**Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
 
 | Provider | Model Examples | Environment Variable | Usage Example |
 |----------|---------------|---------------------|---------------|
