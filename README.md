@@ -26,11 +26,10 @@ docext is a powerful tool for extracting structured information from documents s
 
 ## Features
 
-- **User-friendly interface**: Built with Gradio for easy document processing
 - **Flexible extraction**: Define custom fields or use pre-built templates
 - **Table extraction**: Extract structured tabular data from documents
 - **Confidence scoring**: Get confidence levels for extracted information
-- **On-premises deployment**: Run entirely on your own infrastructure
+- **On-premises deployment**: Run entirely on your own infrastructure (Linux, MacOS)
 - **Multi-page support**: Process documents with multiple pages
 - **REST API**: Programmatic access for integration with your applications
 - **Pre-built templates**: Ready-to-use templates for common document types:
@@ -38,12 +37,29 @@ docext is a powerful tool for extracting structured information from documents s
   - Passports
   - Add/delete new fields/columns for other templates.
 
-## Quickstart
+## Table of Contents
+- [Getting Started](#Getting-Started)
+  - [Quickstart](#Quickstart)
+  - [Installation](#Installation)
+  - [Web Interface](#Web-Interface)
+  - [API access](#API-access)
+- [Supported Models & Platforms](#Supported-Models-&-Platforms)
+  - [Models with vLLM (Linux)](#Models-with-vLLM-Linux)
+  - [Models with Ollama (Linux and MacOS)](#Models-with-Ollama-Linux-and-MacOS)
+  - [Supported Vendor-Hosted Models](#Supported-Vendor-Hosted-Models)
+- [Docker](#Docker)
+- [About](#About)
+- [Contributing](#Contributing)
+- [Troubleshooting](#Troubleshooting)
+
+## Getting Started
+
+### Quickstart
 - [Colab notebook for onprem deployment](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
 - [Colab notebook for vendor-hosted models (openai, anthropic, openrouter)](https://colab.research.google.com/drive/1yBnDv_1mZEuNtSMEYc8INGG0Z3UoLakD?usp=sharing)
 - [Docker](https://github.com/NanoNets/docext/blob/main/README.md#Docker)
 
-## Installation
+### Installation
 
 ```bash
 # create a virtual environment
@@ -63,7 +79,7 @@ uv pip install -e .
 ```
 Check [Supported Models](https://github.com/NanoNets/docext/blob/main/README.md#Supported-Models) section for more options.
 
-## Web Interface
+### Web Interface
 
 docext includes a Gradio-based web interface for easy document processing:
 
@@ -80,7 +96,7 @@ The interface will be available at `http://localhost:7860` with default credenti
 - Username: `admin`
 - Password: `admin`
 
-## API access
+### API access
 
 docext also provides a REST API for programmatic access to the document extraction functionality.
 1. start the API server
@@ -177,7 +193,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 - CUDA-compatible GPU (for optimal performance). Use Google Colab for free GPU access.
 - Dependencies listed in requirements.txt
 
-## Supported Models
+## Supported Models & Platforms
 ### Models with vLLM (Linux)
 
 docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` but you can use any other models supported by vLLM.
@@ -247,14 +263,14 @@ docker run --rm \
   --network host \
   --shm-size=20.24gb \
   --gpus all \
-  nanonetsopensource/docext:v0.1.7 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  nanonetsopensource/docext:v0.1.10 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 ```
 3. If you are using vendor-hosted models, you can use the following command:
 ```bash
 docker run --rm \
   --env "OPENROUTER_API_KEY=<secret>" \
   --network host \
-  nanonetsopensource/docext:v0.1.7 --model_name "openrouter/meta-llama/llama-4-maverick:free"
+  nanonetsopensource/docext:v0.1.10 --model_name "openrouter/meta-llama/llama-4-maverick:free"
 ```
 
 ## About
