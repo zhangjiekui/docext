@@ -27,8 +27,11 @@ def sync_request(
         "api_base": vlm_url
         if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/")
         else None,
-        "api_key": os.getenv("API_KEY") if os.getenv("API_KEY") else None,
     }
+
+    if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/"):
+        completion_args["api_key"] = os.getenv("API_KEY", "EMPTY")
+
     # Only add format argument for Ollama models
     if model_name.startswith("ollama/") and format:
         completion_args["format"] = format
