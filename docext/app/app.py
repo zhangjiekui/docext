@@ -235,7 +235,7 @@ def main(
         if check_vllm_healthcheck(host, port):
             logger.info(f"vLLM server is running on {host}:{port}")
         else:
-            logger.error(
+            logger.warning(
                 f"vLLM server is not running on {host}:{port}. Starting vLLM server...",
             )
             vllm_server = VLLMServer(
