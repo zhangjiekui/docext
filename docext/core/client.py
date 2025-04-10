@@ -37,6 +37,8 @@ def sync_request(
         completion_args["format"] = format
     elif model_name.startswith("hosted_vllm/") and format:
         completion_args["guided_json"] = format
+        if "qwen" in model_name.lower():
+            completion_args["guided_backend"] = "xgrammar:disable-any-whitespace"
     elif model_name.startswith("openrouter"):
         completion_args["response_format"] = format
     elif "gpt" in model_name.lower():
