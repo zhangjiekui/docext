@@ -21,16 +21,15 @@
 
 ## Overview
 
-docext is a powerful tool for extracting structured information from documents such as invoices, passports, and other forms. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
+docext is an OCR-free tool for extracting structured information from documents such as invoices, passports, and other documents. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
 
 
 ## Features
 
-- **User-friendly interface**: Built with Gradio for easy document processing
 - **Flexible extraction**: Define custom fields or use pre-built templates
 - **Table extraction**: Extract structured tabular data from documents
 - **Confidence scoring**: Get confidence levels for extracted information
-- **On-premises deployment**: Run entirely on your own infrastructure
+- **On-premises deployment**: Run entirely on your own infrastructure (Linux, MacOS)
 - **Multi-page support**: Process documents with multiple pages
 - **REST API**: Programmatic access for integration with your applications
 - **Pre-built templates**: Ready-to-use templates for common document types:
@@ -38,12 +37,29 @@ docext is a powerful tool for extracting structured information from documents s
   - Passports
   - Add/delete new fields/columns for other templates.
 
-## Quickstart
+## Table of Contents
+- [Getting Started](#Getting-Started)
+  - [Quickstart](#Quickstart)
+  - [Installation](#Installation)
+  - [Web Interface](#Web-Interface)
+  - [API access](#API-access)
+- [Supported Models & Platforms](#Supported-Models-&-Platforms)
+  - [Models with vLLM (Linux)](#Models-with-vLLM-Linux)
+  - [Models with Ollama (Linux and MacOS)](#Models-with-Ollama-Linux-and-MacOS)
+  - [Supported Vendor-Hosted Models](#Supported-Vendor-Hosted-Models)
+- [Docker](#Docker)
+- [About](#About)
+- [Contributing](#Contributing)
+- [Troubleshooting](#Troubleshooting)
+
+## Getting Started
+
+### Quickstart
 - [Colab notebook for onprem deployment](https://colab.research.google.com/drive/1r1asxGeezfWnJvw8jimfFAB2sGjk1HdM?usp=sharing)
 - [Colab notebook for vendor-hosted models (openai, anthropic, openrouter)](https://colab.research.google.com/drive/1yBnDv_1mZEuNtSMEYc8INGG0Z3UoLakD?usp=sharing)
 - [Docker](https://github.com/NanoNets/docext/blob/main/README.md#Docker)
 
-## Installation
+### Installation
 
 ```bash
 # create a virtual environment
@@ -61,8 +77,9 @@ git clone https://github.com/nanonets/docext.git
 cd docext
 uv pip install -e .
 ```
+Check [Supported Models](https://github.com/NanoNets/docext/blob/main/README.md#Supported-Models) section for more options.
 
-## Web Interface
+### Web Interface
 
 docext includes a Gradio-based web interface for easy document processing:
 
@@ -79,7 +96,7 @@ The interface will be available at `http://localhost:7860` with default credenti
 - Username: `admin`
 - Password: `admin`
 
-## API access
+### API access
 
 docext also provides a REST API for programmatic access to the document extraction functionality.
 1. start the API server
@@ -176,9 +193,10 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 - CUDA-compatible GPU (for optimal performance). Use Google Colab for free GPU access.
 - Dependencies listed in requirements.txt
 
-## Models
+## Supported Models & Platforms
+### Models with vLLM (Linux)
 
-docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ`
+docext uses vision-language models for document understanding. By default, it uses: `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` but you can use any other models supported by vLLM.
 
 Recommended models based on GPU memory:
 | Model | GPU Memory | `--model_name` |
@@ -188,9 +206,39 @@ Recommended models based on GPU memory:
 | Qwen/Qwen2.5-VL-32B-Instruct-AWQ | 48GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ` |
 | Qwen/Qwen2.5-VL-32B-Instruct | 80 GB | `hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct` |
 
-## Supported Vendor-Hosted Models
+```bash
+# will download the default model (Qwen/Qwen2.5-VL-7B-Instruct-AWQ) and host it on your local machine with vLLM on port 8000
+python -m docext.app.app
 
-docext supports integration with various cloud-based vision-language models. **Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
+# will download the model (Qwen/Qwen2.5-VL-32B-Instruct-AWQ) and host it on your local machine with vLLM on port 9000
+python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ --vlm_server_port 9000
+
+# If you already have a vLLM server running on ip <your_ip> and port <your_port>, you can use the following command:
+export API_KEY=<your_api_key> # incase you have used a API key to host the model
+python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ --vlm_server_host <your_ip> --vlm_server_port <your_port>
+```
+
+
+### Models with Ollama (Linux and MacOS)
+> Ollama is supported on Windows. But I have not tested it.
+1. Install [ollama](https://ollama.com/download) in your machine.
+2. Download the checkpoint `ollama pull llama3.2-vision`.
+3. Run the following command to start the ollama server.
+
+```bash
+# You can use the ollama server running on your local machine
+python -m docext.app.app --model_name ollama/llama3.2-vision --max_img_size 1024
+
+# incase you have a ollama server running on ip <your_ip> and port <your_port>
+python -m docext.app.app --model_name ollama/llama3.2-vision --max_img_size 1024 --vlm_server_host <your_ip> --vlm_server_port <your_port>
+```
+If you have a machine with GPU >= 16GB, change the `--max_img_size` to 2048.
+
+### Supported Vendor-Hosted Models
+
+docext supports integration with various cloud-based vision-language models.
+
+**Important**: Please review each provider's data privacy policy before using their services. We recommend using local models for sensitive data.
 
 | Provider | Model Examples | Environment Variable | Usage Example |
 |----------|---------------|---------------------|---------------|
@@ -215,14 +263,14 @@ docker run --rm \
   --network host \
   --shm-size=20.24gb \
   --gpus all \
-  nanonetsopensource/docext:v0.1.7 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  nanonetsopensource/docext:v0.1.10 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 ```
 3. If you are using vendor-hosted models, you can use the following command:
 ```bash
 docker run --rm \
   --env "OPENROUTER_API_KEY=<secret>" \
   --network host \
-  nanonetsopensource/docext:v0.1.7 --model_name "openrouter/meta-llama/llama-4-maverick:free"
+  nanonetsopensource/docext:v0.1.10 --model_name "openrouter/meta-llama/llama-4-maverick:free"
 ```
 
 ## About

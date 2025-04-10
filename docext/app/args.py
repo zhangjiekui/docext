@@ -8,28 +8,28 @@ def parse_args():
         description="DocExt: Onprem information extraction from documents",
     )
     parser.add_argument(
-        "--ui_port",
-        type=int,
-        default=7860,
-        help="Port for the gradio UI",
-    )
-    parser.add_argument(
-        "--vllm_port",
+        "--vlm_server_port",
         type=int,
         default=8000,
-        help="Port for the vLLM server",
+        help="Port for the vLLM/OLLAMA server",
     )
     parser.add_argument(
-        "--vllm_host",
+        "--vlm_server_host",
         type=str,
         default="0.0.0.0",
-        help="Host for the vLLM server",
+        help="Host for the vLLM/OLLAMA server",
     )
     parser.add_argument(
         "--model_name",
         type=str,
         default="hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ",
-        help="Name of the model to use. Can be any Hugging Face model.",
+        help="Name of the model to use. Use 'ollama/' prefix for OLLAMA models and 'hosted_vllm/' prefix for hosted vLLM models.",
+    )
+    parser.add_argument(
+        "--ui_port",
+        type=int,
+        default=7860,
+        help="Port for the gradio UI",
     )
     parser.add_argument(
         "--max_model_len",

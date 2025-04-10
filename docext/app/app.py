@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import signal
 
 import gradio as gr
@@ -7,6 +8,8 @@ import pandas as pd
 from loguru import logger
 
 from docext.app.args import parse_args
+from docext.app.utils import check_ollama_healthcheck
+from docext.app.utils import check_vllm_healthcheck
 from docext.app.utils import cleanup
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
@@ -169,7 +172,17 @@ def gradio_app(
     max_img_size: int,
     concurrency_limit: int,
     share: bool,
+    vllm_server_host: str,
+    vllm_server_port: int,
 ):
+    # set vlm_model_url env variable
+    hosted_model_url = f"http://{vllm_server_host}:{vllm_server_port}"
+    os.environ["VLM_MODEL_URL"] = (
+        f"{hosted_model_url}/v1"
+        if model_name.startswith("hosted_vllm/")
+        else hosted_model_url
+    )
+
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
@@ -215,34 +228,68 @@ def main(
     share: bool,
 ):
     vllm_server = None
-    if model_name.startswith("hosted_vllm/"):
-        vllm_server = VLLMServer(
-            model_name=model_name,
-            host=host,
-            port=port,
-            max_model_len=max_model_len,
-            gpu_memory_utilization=gpu_memory_utilization,
-            max_num_imgs=max_num_imgs,
-            vllm_start_timeout=vllm_start_timeout,
-        )
-        vllm_server.run_in_background()
+    if model_name.startswith("hosted_vllm/") and (
+        "localhost" in host or host == "0.0.0.0" or host == "127.0.0.1"
+    ):
+        # check if the vllm server is running on the given host and port
+        if check_vllm_healthcheck(host, port):
+            logger.info(f"vLLM server is running on {host}:{port}")
+        else:
+            logger.warning(
+                f"vLLM server is not running on {host}:{port}. Starting vLLM server...",
+            )
+            vllm_server = VLLMServer(
+                model_name=model_name,
+                host=host,
+                port=port,
+                max_model_len=max_model_len,
+                gpu_memory_utilization=gpu_memory_utilization,
+                max_num_imgs=max_num_imgs,
+                vllm_start_timeout=vllm_start_timeout,
+            )
+            vllm_server.run_in_background()
 
-        # Handle termination signals to stop the server gracefully
-        signal.signal(
-            signal.SIGINT,
-            lambda signum, frame: cleanup(signum, frame, vllm_server),
-        )
-        signal.signal(
-            signal.SIGTERM,
-            lambda signum, frame: cleanup(signum, frame, vllm_server),
-        )
+            # Handle termination signals to stop the server gracefully
+            signal.signal(
+                signal.SIGINT,
+                lambda signum, frame: cleanup(signum, frame, vllm_server),
+            )
+            signal.signal(
+                signal.SIGTERM,
+                lambda signum, frame: cleanup(signum, frame, vllm_server),
+            )
 
         logger.info(f"Using local model. Current model: {model_name}")
+    elif model_name.startswith("ollama/"):
+        # check if the ollama server is running on the given host and port
+        if check_ollama_healthcheck(host, port):
+            logger.info(f"OLLAMA server is running on {host}:{port}")
+        elif check_ollama_healthcheck("localhost", 11434) and (
+            host == "localhost" or host == "127.0.0.1" or host == "0.0.0.0"
+        ):
+            # common mistake, people forget to change the port for ollama server
+            logger.warning(
+                f"OLLAMA server is running on localhost:11434. Changed the `--vlm_server_port` to 11434",
+            )
+            port = 11434
+        else:
+            logger.error(
+                f"OLLAMA server is not running on {host}:{port}. Please install and start the server following the instructions in the Wiki.",
+            )
+            exit(1)
     else:
         logger.info(f"Not using local model. Current model: {model_name}")
 
     try:
-        gradio_app(model_name, gradio_port, max_img_size, concurrency_limit, share)
+        gradio_app(
+            model_name,
+            gradio_port,
+            max_img_size,
+            concurrency_limit,
+            share,
+            host,
+            port,
+        )
     except (KeyboardInterrupt, Exception) as e:
         if vllm_server:
             cleanup(None, None, vllm_server)
@@ -255,8 +302,8 @@ def docext_app():
 
     main(
         args.model_name,
-        args.vllm_host,
-        args.vllm_port,
+        args.vlm_server_host,
+        args.vlm_server_port,
         args.ui_port,
         args.max_model_len,
         args.gpu_memory_utilization,
