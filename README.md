@@ -77,7 +77,7 @@ git clone https://github.com/nanonets/docext.git
 cd docext
 uv pip install -e .
 ```
-Check [Supported Models](https://github.com/NanoNets/docext/blob/main/README.md#Supported-Models) section for more options.
+Check [Supported Models](#Supported-Models-&-Platforms) section for more options.
 
 ### Web Interface
 
@@ -263,14 +263,14 @@ docker run --rm \
   --network host \
   --shm-size=20.24gb \
   --gpus all \
-  nanonetsopensource/docext:v0.1.10 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
+  nanonetsopensource/docext:v0.1.11 --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ"
 ```
 3. If you are using vendor-hosted models, you can use the following command:
 ```bash
 docker run --rm \
   --env "OPENROUTER_API_KEY=<secret>" \
   --network host \
-  nanonetsopensource/docext:v0.1.10 --model_name "openrouter/meta-llama/llama-4-maverick:free"
+  nanonetsopensource/docext:v0.1.11 --model_name "openrouter/meta-llama/llama-4-maverick:free"
 ```
 
 ## About
