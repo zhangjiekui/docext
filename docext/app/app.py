@@ -228,7 +228,9 @@ def main(
     share: bool,
 ):
     vllm_server = None
-    if model_name.startswith("hosted_vllm/") and "localhost" in host:
+    if model_name.startswith("hosted_vllm/") and (
+        "localhost" in host or host == "0.0.0.0" or host == "127.0.0.1"
+    ):
         # check if the vllm server is running on the given host and port
         if check_vllm_healthcheck(host, port):
             logger.info(f"vLLM server is running on {host}:{port}")
