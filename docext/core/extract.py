@@ -10,7 +10,7 @@ import pandas as pd
 from loguru import logger
 
 from docext.core.client import sync_request
-from docext.core.confidence import get_fields_confidence_score_messages_binary
+from docext.core.confidence import get_fields_confidence_score_messages_numeric
 from docext.core.prompts import get_fields_messages
 from docext.core.prompts import get_tables_messages
 from docext.core.utils import resize_images
@@ -29,19 +29,34 @@ def extract_fields_from_documents(
     fields_description = [field.get("description", "") for field in fields]
     messages = get_fields_messages(field_names, fields_description, file_paths)
 
+    format_fields = {
+        "type": "object",
+        "properties": {field_name: {"type": "string"} for field_name in field_names},
+    }
+
     logger.info(f"Sending request to {model_name}")
-    response = sync_request(messages, model_name)["choices"][0]["message"]["content"]
+    response = sync_request(messages, model_name, format=format_fields)["choices"][0][
+        "message"
+    ]["content"]
     logger.info(f"Response: {response}")
 
     # conf score
-    messages = get_fields_confidence_score_messages_binary(
+    messages = get_fields_confidence_score_messages_numeric(
         messages,
         response,
         field_names,
     )
-    response_conf_score = sync_request(messages, model_name)["choices"][0]["message"][
-        "content"
-    ]
+
+    format_fields_conf_score = {
+        "type": "object",
+        "properties": {field_name: {"type": "number"} for field_name in field_names},
+    }
+
+    response_conf_score = sync_request(
+        messages,
+        model_name,
+        format=format_fields_conf_score,
+    )["choices"][0]["message"]["content"]
     logger.info(f"Response conf score: {response_conf_score}")
 
     extracted_fields = json_repair.loads(response)

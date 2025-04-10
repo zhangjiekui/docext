@@ -11,20 +11,33 @@ def sync_request(
     model_name: str = "hosted_vllm/Qwen/Qwen2.5-VL-3B-Instruct",
     max_tokens: int = 5000,
     num_completions: int = 1,
+    format: dict | None = None,
 ):
     vlm_url = os.getenv("VLM_MODEL_URL", "")
     if vlm_url == "":
         raise ValueError(
             "VLM_MODEL_URL is not set. Please set it to the URL of the VLM model.",
         )
-    response = completion(
-        model=model_name,
-        messages=messages,
-        max_tokens=max_tokens,
-        n=num_completions,
-        temperature=0,
-        api_base=vlm_url
+    completion_args = {
+        "model": model_name,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "n": num_completions,
+        "temperature": 0,
+        "api_base": vlm_url
         if model_name.startswith("hosted_vllm/") or model_name.startswith("ollama/")
         else None,
-    )
+        "api_key": os.getenv("API_KEY") if os.getenv("API_KEY") else None,
+    }
+    # Only add format argument for Ollama models
+    if model_name.startswith("ollama/") and format:
+        completion_args["format"] = format
+    elif model_name.startswith("hosted_vllm/") and format:
+        completion_args["guided_json"] = format
+    elif model_name.startswith("openrouter"):
+        completion_args["response_format"] = format
+    elif "gpt" in model_name.lower():
+        completion_args["response_format"] = {"type": "json_object"}
+
+    response = completion(**completion_args)
     return response.json()
