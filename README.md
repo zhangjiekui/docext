@@ -21,7 +21,7 @@
 
 ## Overview
 
-docext is a powerful tool for extracting structured information from documents such as invoices, passports, and other forms. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
+docext is an OCR-free tool for extracting structured information from documents such as invoices, passports, and other documents. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
 
 
 ## Features
