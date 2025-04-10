@@ -198,6 +198,7 @@ python -m docext.app.app
 python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-32B-Instruct-AWQ --vlm_server_port 9000
 
 # If you already have a vLLM server running on ip <your_ip> and port <your_port>, you can use the following command:
+export API_KEY=<your_api_key> # incase you have used a API key to host the model
 python -m docext.app.app --model_name hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ --vlm_server_host <your_ip> --vlm_server_port <your_port>
 ```
 
