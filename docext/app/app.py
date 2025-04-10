@@ -262,7 +262,9 @@ def main(
         # check if the ollama server is running on the given host and port
         if check_ollama_healthcheck(host, port):
             logger.info(f"OLLAMA server is running on {host}:{port}")
-        elif check_ollama_healthcheck("localhost", 11434):
+        elif check_ollama_healthcheck("localhost", 11434) and (
+            host == "localhost" or host == "127.0.0.1" or host == "0.0.0.0"
+        ):
             # common mistake, people forget to change the port for ollama server
             logger.warning(
                 f"OLLAMA server is running on localhost:11434. Changed the `--vlm_server_port` to 11434",
