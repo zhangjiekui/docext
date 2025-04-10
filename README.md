@@ -1,6 +1,6 @@
 <h1 align="center">docext</h1>
 
-<p align="center"><em>An on-premises document information extraction tool powered by vision-language models.</em></p>
+<p align="center"><em>An on-premises, OCR-free document information extraction tool powered by vision-language models.</em></p>
 
 <p align="center">
   <a href="https://pepy.tech/projects/docext">
