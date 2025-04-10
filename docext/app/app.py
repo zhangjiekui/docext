@@ -176,7 +176,13 @@ def gradio_app(
     vllm_server_port: int,
 ):
     # set vlm_model_url env variable
-    os.environ["VLM_MODEL_URL"] = f"http://{vllm_server_host}:{vllm_server_port}"
+    hosted_model_url = f"http://{vllm_server_host}:{vllm_server_port}"
+    os.environ["VLM_MODEL_URL"] = (
+        f"{hosted_model_url}/v1"
+        if model_name.startswith("hosted_vllm/")
+        else hosted_model_url
+    )
+
     with gr.Blocks() as demo:
         with gr.Tabs():
             with gr.Tab("Information Extraction from documents"):
