@@ -1,0 +1,69 @@
+tasks:
+  - KIE # Key Information Extraction
+  - OCR # Optical Character Recognition
+
+datasets: # leave it empty to consider all the datasets
+models: ["gpt-4o-mini", "gpt-4.1-2025-04-14", "gpt-4o-2024-08-06", "gemini/gemini-2.0-flash"]
+
+cache_dir: "./docext_benchmark_cache"
+max_samples_per_dataset: 10 # set this to a positive number to limit the number of samples per dataset
+
+
+# dataset configs
+## KIE datasets
+docile:
+  annot_path: "/home/paperspace/projects/datasets/docile/data/docile/val.json"
+  annotations_root: /home/paperspace/projects/datasets/docile/data/docile/annotations
+  pdf_root: /home/paperspace/projects/datasets/docile/data/docile/pdfs
+handwritten_forms:
+  hf_name: "Rasi1610/DeathSe43_44_checkbox"
+  test_split: "val"
+
+## OCR datasets
+ocr_handwriting:
+  hf_name: "DataStudio/OCR_handwritting_HAT2023"
+  test_split: "train" # Test set does not have GT annotations, we sample 1000 random samples from train set
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
+digital_ocr_diacritics:
+  hf_name: "ademax/ocr_scan_vi_01"
+  test_split: "test"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
+
+# Default Templates
+KIE_default_template:
+  system_prompt: "You are a helpful assistant that extracts information from a document."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Extract the following {fields} from the above document. If a field is not present, return ''. Return the output in a valid JSON format as {output_format}."
+
+OCR_default_template:
+  system_prompt: 'You are an OCR model. Your task is to extract all visible and legible text from images with high accuracy and fidelity.\n\nOutput only the text that appears in the image.\n\nPreserve the natural reading order (e.g., top-to-bottom, left-to-right) as much as possible.\n\nDo not infer, summarize, or add information not explicitly visible in the image.\n\nIf the text is partially visible, extract as much as can be confidently read.\n\nMaintain original formatting when reasonable (e.g., line breaks, spacing).\n\nIf there is no readable text, respond with: ""\n\nYour primary goal is to be accurate, consistent, and faithful to the image content.'
+  user_prompt: "Extract the text from the above document. Do not give any explanation. Just return the text."
+
+
+# model configs
+gpt-4o-mini:
+  max_tokens: 3000
+  temperature: 0.0
+  template:
+    KIE: null
+    OCR: null
+
+gpt-4.1-2025-04-14:
+  max_tokens: 3000
+  temperature: 0.0
+  template:
+    KIE: null
+
+gpt-4o-2024-08-06:
+  max_tokens: 3000
+  temperature: 0.0
+  template:
+    KIE: null
+
+gemini/gemini-2.0-flash:
+  max_tokens: 3000
+  temperature: 0.0
+  template:
+    KIE: null

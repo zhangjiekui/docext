@@ -6,6 +6,7 @@ loguru
 mdpd
 pandas
 python-dotenv
+python-levenshtein==0.27.1
 requests
 setuptools
 tabulate
