@@ -24,14 +24,17 @@ from tqdm import tqdm
 
 from docext.benchmark.metrics.kie import get_kie_metrics
 from docext.benchmark.metrics.ocr import get_ocr_metrics
+from docext.benchmark.metrics.vqa import get_vqa_extact_match_metrics
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
 from docext.benchmark.tasks import get_OCR_messages
+from docext.benchmark.tasks import get_VQA_messages
 from docext.benchmark.utils import load_yaml
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.ds import PredField
 from docext.benchmark.vlm_datasets.ds import Prediction
+from docext.benchmark.vlm_datasets.ds import VQA
 
 
 class NanonetsIDPBenchmark:
@@ -56,6 +59,7 @@ class NanonetsIDPBenchmark:
         self.templates = {
             "KIE": self.benchmark_config["KIE_default_template"],
             "OCR": self.benchmark_config["OCR_default_template"],
+            "VQA": self.benchmark_config["VQA_default_template"],
         }
 
         # run the benchmark, Note we cache each query. incase something fails, we can resume from the same point
@@ -140,6 +144,20 @@ class NanonetsIDPBenchmark:
                         test_split=self.benchmark_config["digital_ocr_diacritics"][
                             "test_split"
                         ],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
+            elif dataset.name == "chartqa":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["chartqa"].get("max_samples", 1000),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["chartqa"]["hf_name"],
+                        test_split=self.benchmark_config["chartqa"]["test_split"],
                         max_samples=max_samples,
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
@@ -230,11 +248,31 @@ class NanonetsIDPBenchmark:
                         ),
                     ),
                 )
+            elif dataset.task == "VQA":
+                pred_with_gt.append(
+                    Prediction(
+                        gt=data,
+                        pred=BenchmarkData(
+                            image_paths=data.image_paths,
+                            extraction_type=data.extraction_type,
+                            vqa=VQA(
+                                question=data.vqa.question
+                                if data.vqa is not None
+                                else "",
+                                answer=parsed_response,
+                            ),
+                        ),
+                    ),
+                )
 
         if dataset.task == "KIE":
             return get_kie_metrics(pred_with_gt)
         elif dataset.task == "OCR":
             return get_ocr_metrics(pred_with_gt)
+        elif dataset.task == "VQA":
+            return get_vqa_extact_match_metrics(pred_with_gt)
+        else:
+            raise ValueError(f"Task {dataset.task} is not supported.")
 
     def _get_messages(self, data: BenchmarkData, template: dict[str, Any], task: str):
         """
@@ -244,6 +282,8 @@ class NanonetsIDPBenchmark:
             return get_KIE_messages(data, template)
         elif task == "OCR":
             return get_OCR_messages(data, template)
+        elif task == "VQA":
+            return get_VQA_messages(data, template)
         else:
             raise ValueError(f"Task {task} is not supported.")
 
@@ -263,8 +303,8 @@ class NanonetsIDPBenchmark:
         return response.json()
 
     def _parse_response(self, response: dict, task: str):
-        if task == "OCR":
-            # OCR task returns a string
+        if task == "OCR" or task == "VQA":
+            # OCR and VQA task returns a string
             return response["choices"][0]["message"]["content"].strip()
 
         parsed_json = json_repair.repair_json(

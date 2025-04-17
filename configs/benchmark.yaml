@@ -1,9 +1,11 @@
 tasks:
   - KIE # Key Information Extraction
   - OCR # Optical Character Recognition
+  - VQA # Visual Question Answering
 
 datasets: # leave it empty to consider all the datasets
 models: ["gpt-4o-mini", "gpt-4.1-2025-04-14", "gpt-4o-2024-08-06", "gemini/gemini-2.0-flash"]
+
 
 cache_dir: "./docext_benchmark_cache"
 max_samples_per_dataset: 10 # set this to a positive number to limit the number of samples per dataset
@@ -30,6 +32,12 @@ digital_ocr_diacritics:
   test_split: "test"
   max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
 
+## VQA datasets
+chartqa:
+  hf_name: "HuggingFaceM4/ChartQA"
+  test_split: "test"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
 
 # Default Templates
 KIE_default_template:
@@ -42,6 +50,11 @@ OCR_default_template:
   user_prompt: "Extract the text from the above document. Do not give any explanation. Just return the text."
 
 
+VQA_default_template:
+  system_prompt: "You are a helpful and intelligent Vision-Language Model (VLM). When a user shares an image, your primary task is to extract relevant visual and textual information from the image and answer the user's questions accurately based on the image content. If the user asks a question that cannot be answered from the image alone, return ''. Always ground your answers in the image content unless otherwise specified."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Answer the following question based on the images shared: {question}. Do not give any explanation. Just return the answer. If the answer is a number, return it as a number and not a string (eg. Return 3 instead of Three)."
+
 # model configs
 gpt-4o-mini:
   max_tokens: 3000
@@ -49,6 +62,7 @@ gpt-4o-mini:
   template:
     KIE: null
     OCR: null
+    VQA: null
 
 gpt-4.1-2025-04-14:
   max_tokens: 3000

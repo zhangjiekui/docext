@@ -19,6 +19,7 @@ class ExtractionType(Enum):
     TABLE = "table"
     CLASSIFICATION = "classification"
     OCR = "ocr"
+    VQA = "vqa"
 
 
 class BBox(BaseModel):
@@ -39,6 +40,11 @@ class Field(BaseModel):
     page_number: int | None = None  # for multi-page documents, this is the page number
 
 
+class VQA(BaseModel):
+    question: str
+    answer: str
+
+
 class PredField(Field):
     # predicted field
     confidence: float
@@ -50,6 +56,7 @@ class BenchmarkData(BaseModel):
     fields: list[Field | PredField] | None = None
     ocr_text: str | None = None
     classification: str | None = None
+    vqa: VQA | None = None
 
 
 class Prediction(BaseModel):
