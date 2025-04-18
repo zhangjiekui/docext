@@ -184,6 +184,33 @@ class NanonetsIDPBenchmark:
         logger.info("\n" + df.to_string())
         return all_scores
 
+    def _get_prediction_cache_files(self, dataset: BenchmarkDataset, model_name: str):
+        template = self.templates[dataset.task]
+        model_config = self.models[model_name]
+        if model_config.get("template", {}).get(dataset.task, None) is not None:
+            # override the default template if provided in the model config
+            template = model_config["template"][dataset.task]
+
+        cache_files = []
+        questions = []
+        for data in tqdm(
+            dataset.data,
+            desc=f"Running benchmark for {model_name} on {dataset.name}",
+            leave=False,
+        ):
+            messages = self._get_messages(data, template, dataset.task)
+
+            # check if the response is cached
+            hash_messages = hashlib.sha256(str(messages).encode()).hexdigest()
+            cache_file = os.path.join(
+                self.cache_dir,
+                f"{model_name.replace('/', '_')}_{hash_messages}.json",
+            )
+            if os.path.exists(cache_file):
+                cache_files.append(cache_file)
+                questions.append(messages[-1]["content"])
+        return cache_files, questions
+
     def _run_single_model_single_dataset(
         self,
         dataset: BenchmarkDataset,
@@ -331,11 +358,18 @@ class NanonetsIDPBenchmark:
             ensure_ascii=False,
             return_objects=True,
         )
-        if isinstance(parsed_json, list):  # TODO: can we handle this better?
+        if isinstance(parsed_json, list):
             # merge all the keys into a single dict
             merged_dict = {}
             for item in parsed_json:
-                merged_dict.update(item)
+                for key, value in item.items():
+                    if key not in merged_dict:
+                        merged_dict[key] = value
+                    else:
+                        if isinstance(merged_dict[key], list):
+                            merged_dict[key].append(value)
+                        else:
+                            merged_dict[key] = [merged_dict[key], value]
             return merged_dict
 
         if parsed_json == "":

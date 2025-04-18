@@ -21,9 +21,10 @@ def get_kie_metrics(predictions: list[Prediction]):
                 pred_value = ""
             else:
                 pred_value = pred_field.value
-            # print(pred_value.replace("\n", " "), gt_field.value.replace("\n", " "))
-            dist = edit_distance(pred_value, gt_field.value)
-            max_len = max(len(pred_value), len(gt_field.value))
+            pred_value = str(pred_value)
+            gt_value = str(gt_field.value)
+            dist = edit_distance(pred_value, gt_value)
+            max_len = max(len(pred_value), len(gt_value))
             if max_len == 0:
                 edit_distances.append(1.0)
             else:
