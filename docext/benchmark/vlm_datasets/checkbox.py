@@ -88,11 +88,9 @@ class DeathSe43_44_checkbox(BenchmarkDataset):
         cache_dir: str = "./docext_benchmark_cache",
     ):
         test_data = load_dataset(hf_name, split=test_split)
-        test_data = (
-            test_data.select(range(max_samples))
-            if max_samples and max_samples > 0
-            else test_data
-        )
+        if max_samples and max_samples > 0:
+            max_samples = min(max_samples, len(test_data))
+            test_data = test_data.select(range(max_samples))
 
         ## convert the data to the format of the BenchmarkDataset
         data = []
