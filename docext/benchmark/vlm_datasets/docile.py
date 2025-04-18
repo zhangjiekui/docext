@@ -81,7 +81,7 @@ class Docile(BenchmarkDataset):
             metadata = doc_annotation["metadata"]
             page_sizes = metadata["page_sizes_at_200dpi"]
             field_extractions = doc_annotation["field_extractions"]
-            fields_data = []
+            fields_data_by_label = {}
             for field_extraction in field_extractions:
                 bbox = field_extraction[
                     "bbox"
@@ -104,12 +104,23 @@ class Docile(BenchmarkDataset):
                     page_number=field_extraction["page"],
                     bbox=bbox,
                 )
-                fields_data.append(field_data)
+                if field_data.label not in fields_data_by_label:
+                    fields_data_by_label[field_data.label] = field_data
+                else:
+                    if isinstance(fields_data_by_label[field_data.label].value, list):
+                        fields_data_by_label[field_data.label].value.append(  # type: ignore[union-attr]
+                            field_data.value  # type: ignore[arg-type]
+                        )
+                    else:
+                        fields_data_by_label[field_data.label].value = [
+                            fields_data_by_label[field_data.label].value,  # type: ignore[list-item]
+                            field_data.value,  # type: ignore[list-item]
+                        ]
             data.append(
                 BenchmarkData(
                     extraction_type=ExtractionType.FIELD,
                     image_paths=pdf2image_mapping[pdf_path],
-                    fields=fields_data,
+                    fields=[val for _, val in fields_data_by_label.items()],
                 ),
             )
         return data
