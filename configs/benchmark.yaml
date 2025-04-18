@@ -4,11 +4,19 @@ tasks:
   - VQA # Visual Question Answering
 
 datasets: # leave it empty to consider all the datasets
-models: ["gpt-4o-mini", "gpt-4.1-2025-04-14", "gpt-4o-2024-08-06", "gemini/gemini-2.0-flash"]
+models: [
+  "gpt-4o-mini",
+  "gpt-4.1-2025-04-14",
+  "gpt-4o-2024-08-06",
+  "gemini/gemini-2.0-flash",
+  "gemini/gemini-2.5-flash-preview-04-17",
+  "o4-mini-2025-04-16",
+  # "openrouter/meta-llama/llama-4-maverick:free"
+  ]
 
 
 cache_dir: "./docext_benchmark_cache"
-max_samples_per_dataset: 10 # set this to a positive number to limit the number of samples per dataset
+max_samples_per_dataset: 20 # set this to a positive number to limit the number of samples per dataset
 
 
 # dataset configs
@@ -36,6 +44,11 @@ digital_ocr_diacritics:
 chartqa:
   hf_name: "HuggingFaceM4/ChartQA"
   test_split: "test"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
+docvqa:
+  hf_name: "lmms-lab/DocVQA"
+  test_split: "DocVQA"
   max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
 
 
@@ -76,8 +89,26 @@ gpt-4o-2024-08-06:
   template:
     KIE: null
 
+o4-mini-2025-04-16:
+  max_completion_tokens: 3000
+  temperature: 1.0
+  template:
+    KIE: null
+
 gemini/gemini-2.0-flash:
   max_tokens: 3000
   temperature: 0.0
   template:
     KIE: null
+
+gemini/gemini-2.5-pro-exp-03-25:
+  max_tokens: 3000
+  temperature: 0.0
+
+gemini/gemini-2.5-flash-preview-04-17:
+  max_tokens: 3000
+  temperature: 0.0
+
+openrouter/meta-llama/llama-4-maverick:free:
+  max_tokens: 3000
+  temperature: 0.0
