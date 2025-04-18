@@ -42,7 +42,7 @@ class Field(BaseModel):
 
 class VQA(BaseModel):
     question: str
-    answer: str
+    answer: str | list[str]
 
 
 class PredField(Field):

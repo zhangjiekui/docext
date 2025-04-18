@@ -19,6 +19,7 @@ from docext.benchmark.utils import encode_image
 from docext.benchmark.vlm_datasets.chartqa import ChartQA
 from docext.benchmark.vlm_datasets.checkbox import DeathSe43_44_checkbox
 from docext.benchmark.vlm_datasets.docile import Docile
+from docext.benchmark.vlm_datasets.docvqa import DocVQA
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.ocr_dia import OCRDiacritics
@@ -36,6 +37,7 @@ OCR_DATASETS = [
 
 VQA_DATASETS = [
     ChartQA,
+    DocVQA,
 ]
 
 TASKS2DATASETS = {

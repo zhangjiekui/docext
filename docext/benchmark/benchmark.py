@@ -27,6 +27,7 @@ from tqdm import tqdm
 
 from docext.benchmark.metrics.kie import get_kie_metrics
 from docext.benchmark.metrics.ocr import get_ocr_metrics
+from docext.benchmark.metrics.vqa import get_vqa__metric_for_multiple_possible_answers
 from docext.benchmark.metrics.vqa import get_vqa_metrics
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
@@ -163,6 +164,21 @@ class NanonetsIDPBenchmark:
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
                 )
+            elif dataset.name == "docvqa":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["docvqa"].get("max_samples", 1000),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["docvqa"]["hf_name"],
+                        test_split=self.benchmark_config["docvqa"]["test_split"],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
+
             else:
                 raise ValueError(f"Dataset {dataset.name} is not supported.")
         return init_datasets
@@ -181,6 +197,9 @@ class NanonetsIDPBenchmark:
                 all_scores[dataset.name][model_name] = benchmark_scores
 
         df = pd.DataFrame(all_scores)
+        df["average"] = df.mean(axis=1)
+        df = df[["average"] + list(df.columns[:-1])]
+        df = df.sort_values(by="average", ascending=False)
         logger.info("\n" + df.to_string())
         return all_scores
 
@@ -300,7 +319,10 @@ class NanonetsIDPBenchmark:
         elif dataset.task == "OCR":
             return get_ocr_metrics(pred_with_gt)
         elif dataset.task == "VQA":
-            return get_vqa_metrics(pred_with_gt)
+            if dataset.name == "docvqa":
+                return get_vqa__metric_for_multiple_possible_answers(pred_with_gt)
+            else:
+                return get_vqa_metrics(pred_with_gt)
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
@@ -442,4 +464,3 @@ if __name__ == "__main__":
         benchmark_config_path="/home/paperspace/projects/docext/configs/benchmark.yaml",
     )
     benchmark.run_benchmark()
-    print(benchmark.datasets)
