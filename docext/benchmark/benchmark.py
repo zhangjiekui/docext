@@ -27,7 +27,7 @@ from tqdm import tqdm
 
 from docext.benchmark.metrics.kie import get_kie_metrics
 from docext.benchmark.metrics.ocr import get_ocr_metrics
-from docext.benchmark.metrics.vqa import get_vqa_extact_match_metrics
+from docext.benchmark.metrics.vqa import get_vqa_metrics
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
 from docext.benchmark.tasks import get_OCR_messages
@@ -300,7 +300,7 @@ class NanonetsIDPBenchmark:
         elif dataset.task == "OCR":
             return get_ocr_metrics(pred_with_gt)
         elif dataset.task == "VQA":
-            return get_vqa_extact_match_metrics(pred_with_gt)
+            return get_vqa_metrics(pred_with_gt)
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
