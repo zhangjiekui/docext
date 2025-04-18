@@ -20,6 +20,9 @@ import json_repair
 import pandas as pd
 from litellm import completion
 from loguru import logger
+from tenacity import retry
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 from tqdm import tqdm
 
 from docext.benchmark.metrics.kie import get_kie_metrics
@@ -69,8 +72,6 @@ class NanonetsIDPBenchmark:
         )
         self.cache_dir = os.path.join(self.cache_dir, "prediction_cache")
         os.makedirs(self.cache_dir, exist_ok=True)
-
-        self.run_benchmark()
 
     def _get_datasets(self):
         datasets = get_datasets(
@@ -172,7 +173,6 @@ class NanonetsIDPBenchmark:
         for dataset in tqdm(self.datasets):
             all_scores[dataset.name] = {}
             for model_name in self.models:
-                logger.info(f"Running benchmark for {model_name} on {dataset.name}")
                 benchmark_scores = self._run_single_model_single_dataset(
                     dataset,
                     model_name,
@@ -197,7 +197,11 @@ class NanonetsIDPBenchmark:
 
         pred_with_gt = []
 
-        for data in dataset.data:
+        for data in tqdm(
+            dataset.data,
+            desc=f"Running benchmark for {model_name} on {dataset.name}",
+            leave=False,
+        ):
             messages = self._get_messages(data, template, dataset.task)
 
             # check if the response is cached
@@ -213,7 +217,6 @@ class NanonetsIDPBenchmark:
             else:
                 # get the response from the model and cache it if it is not cached
                 response = self._get_response(messages, model_name, model_config)
-                self._cache_response(messages, model_name, response)
 
             # parse the response
             parsed_response = self._parse_response(response, dataset.task)
@@ -287,6 +290,10 @@ class NanonetsIDPBenchmark:
         else:
             raise ValueError(f"Task {task} is not supported.")
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=20, min=20, max=600),
+    )
     def _get_response(
         self,
         messages: list[dict[str, Any]],
@@ -297,21 +304,40 @@ class NanonetsIDPBenchmark:
         response = completion(
             model=model_name,
             messages=messages,
-            max_tokens=model_config.get("max_tokens", 3000),
+            max_tokens=model_config.get("max_tokens", None),
+            max_completion_tokens=model_config.get("max_completion_tokens", None),
             temperature=model_config.get("temperature", 0.0),
+            # max_retries=3,
         )
-        return response.json()
+        response = response.json()
+        self._cache_response(messages, model_name, response)
+        return response
 
     def _parse_response(self, response: dict, task: str):
         if task == "OCR" or task == "VQA":
             # OCR and VQA task returns a string
-            return response["choices"][0]["message"]["content"].strip()
-
+            answer = (
+                response["choices"][0]["message"]["content"]
+                if len(response["choices"]) > 0
+                and response["choices"][0]["message"]["content"]
+                else ""
+            )
+            return answer.strip() if answer else ""
         parsed_json = json_repair.repair_json(
-            response["choices"][0]["message"]["content"],
+            response["choices"][0]["message"]["content"]
+            if len(response["choices"]) > 0
+            and response["choices"][0]["message"]["content"]
+            else "{}",
             ensure_ascii=False,
             return_objects=True,
         )
+        if isinstance(parsed_json, list):  # TODO: can we handle this better?
+            # merge all the keys into a single dict
+            merged_dict = {}
+            for item in parsed_json:
+                merged_dict.update(item)
+            return merged_dict
+
         if parsed_json == "":
             return {}  # parsing failed
         return parsed_json
@@ -381,4 +407,5 @@ if __name__ == "__main__":
     benchmark = NanonetsIDPBenchmark(
         benchmark_config_path="/home/paperspace/projects/docext/configs/benchmark.yaml",
     )
+    benchmark.run_benchmark()
     print(benchmark.datasets)
