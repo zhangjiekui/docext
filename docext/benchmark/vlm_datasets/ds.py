@@ -31,7 +31,7 @@ class BBox(BaseModel):
 
 class Field(BaseModel):
     label: str
-    value: str
+    value: str | list[str]
     description: str | None = None
     bbox: BBox | None = None
     page_path: str | None = (
