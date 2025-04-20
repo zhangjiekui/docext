@@ -22,8 +22,10 @@ from docext.benchmark.vlm_datasets.docile import Docile
 from docext.benchmark.vlm_datasets.docvqa import DocVQA
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
+from docext.benchmark.vlm_datasets.longdocbench import NanonetsLongDocBench
 from docext.benchmark.vlm_datasets.ocr_dia import OCRDiacritics
 from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingHAT2023
+from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingRotated
 
 KIE_DATASETS = [
     Docile,
@@ -32,12 +34,14 @@ KIE_DATASETS = [
 
 OCR_DATASETS = [
     OCRHandwritingHAT2023,
+    OCRHandwritingRotated,
     OCRDiacritics,
 ]
 
 VQA_DATASETS = [
     ChartQA,
     DocVQA,
+    NanonetsLongDocBench,
 ]
 
 TASKS2DATASETS = {

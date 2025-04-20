@@ -129,6 +129,27 @@ class NanonetsIDPBenchmark:
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
                 )
+            elif dataset.name == "ocr_handwriting_rotated":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["ocr_handwriting_rotated"].get(
+                        "max_samples", 1000
+                    ),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["ocr_handwriting_rotated"][
+                            "hf_name"
+                        ],
+                        test_split=self.benchmark_config["ocr_handwriting_rotated"][
+                            "test_split"
+                        ],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                        rotation=True,
+                    ),
+                )
             elif dataset.name == "digital_ocr_diacritics":
                 max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
                 max_samples = min(
@@ -179,6 +200,29 @@ class NanonetsIDPBenchmark:
                     ),
                 )
 
+            elif dataset.name == "nanonets_longdocbench":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["nanonets_longdocbench"].get(
+                        "max_samples", 1000
+                    ),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["nanonets_longdocbench"][
+                            "hf_name"
+                        ],
+                        test_split=self.benchmark_config["nanonets_longdocbench"][
+                            "test_split"
+                        ],
+                        additional_docs_count=self.benchmark_config[
+                            "nanonets_longdocbench"
+                        ]["additional_docs_count"],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
             else:
                 raise ValueError(f"Dataset {dataset.name} is not supported.")
         return init_datasets
@@ -321,6 +365,10 @@ class NanonetsIDPBenchmark:
         elif dataset.task == "VQA":
             if dataset.name == "docvqa":
                 return get_vqa__metric_for_multiple_possible_answers(pred_with_gt)
+            elif dataset.name == "nanonets_longdocbench":
+                return get_vqa_metrics(
+                    pred_with_gt, strip_page=True
+                )  # gpt-4o sometimes returns Page 1 sometimes just 1.
             else:
                 return get_vqa_metrics(pred_with_gt)
         else:

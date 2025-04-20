@@ -3,7 +3,7 @@ tasks:
   - OCR # Optical Character Recognition
   - VQA # Visual Question Answering
 
-datasets: # leave it empty to consider all the datasets
+datasets:  # leave it empty to consider all the datasets
 models: [
   "gpt-4o-mini",
   "gpt-4.1-2025-04-14",
@@ -40,6 +40,12 @@ digital_ocr_diacritics:
   test_split: "test"
   max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
 
+ocr_handwriting_rotated:
+  hf_name: "DataStudio/OCR_handwritting_HAT2023"
+  test_split: "train"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+  rotation: true
+
 ## VQA datasets
 chartqa:
   hf_name: "HuggingFaceM4/ChartQA"
@@ -51,6 +57,11 @@ docvqa:
   test_split: "DocVQA"
   max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
 
+nanonets_longdocbench:
+  hf_name: "Rasi1610/DeathSe43_44_checkbox"
+  test_split: "val"
+  additional_docs_count: 20
+  max_samples: 5 # we take the min of max_samples_per_dataset and max_samples, if both are set
 
 # Default Templates
 KIE_default_template:

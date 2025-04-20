@@ -7,7 +7,7 @@ from Levenshtein import distance as edit_distance
 from docext.benchmark.vlm_datasets.ds import Prediction
 
 
-def get_vqa_metrics(pred_with_gt: list[Prediction]):
+def get_vqa_metrics(pred_with_gt: list[Prediction], strip_page: bool = False):
     exact_matches = []
     for prediction in pred_with_gt:
         gt = prediction.gt
@@ -16,7 +16,9 @@ def get_vqa_metrics(pred_with_gt: list[Prediction]):
         pred_answer = str(
             pred.vqa.answer if pred is not None and pred.vqa is not None else ""
         )
-        # print(gt_answer, pred_answer)
+        if strip_page:
+            gt_answer = gt_answer.replace("Page ", "").strip()
+            pred_answer = pred_answer.replace("Page ", "").strip()
         # exact_match = str(gt_answer) == str(
         #     pred_answer
         # )  # we convert to string to handle numbers

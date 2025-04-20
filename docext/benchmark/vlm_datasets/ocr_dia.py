@@ -23,10 +23,12 @@ class OCRDiacritics(OCRHandwritingHAT2023):
         test_split: str = "test",
         max_samples: int | None = None,
         cache_dir: str | None = None,
+        rotation: bool = False,
     ):
         super().__init__(
             hf_name=hf_name,
             test_split=test_split,
             max_samples=max_samples,
             cache_dir=cache_dir,
+            rotation=rotation,
         )
