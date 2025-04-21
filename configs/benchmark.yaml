@@ -18,7 +18,7 @@ models: [
 
 cache_dir: "./docext_benchmark_cache"
 max_samples_per_dataset: 20 # set this to a positive number to limit the number of samples per dataset
-
+max_workers: 8
 
 # dataset configs
 ## KIE datasets

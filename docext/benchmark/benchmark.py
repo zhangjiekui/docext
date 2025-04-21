@@ -12,9 +12,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
+from itertools import repeat
 from typing import Any
-from typing import Dict
-from typing import List
 
 import json_repair
 import pandas as pd
@@ -77,6 +77,8 @@ class NanonetsIDPBenchmark:
         )
         self.cache_dir = os.path.join(self.cache_dir, "prediction_cache")
         os.makedirs(self.cache_dir, exist_ok=True)
+
+        self.max_workers = self.benchmark_config.get("max_workers", 1)
 
     def _get_datasets(self):
         datasets = get_datasets(
@@ -306,6 +308,30 @@ class NanonetsIDPBenchmark:
                 questions.append(messages[-1]["content"])
         return cache_files, questions
 
+    def _process_item(
+        self,
+        data: BenchmarkData,
+        template: dict[str, Any],
+        task: str,
+        model_name: str,
+        model_config: dict[str, Any],
+    ):
+        messages = self._get_messages(data, template, task)
+        hash_messages = hashlib.sha256(str(messages).encode()).hexdigest()
+        cache_file = os.path.join(
+            self.cache_dir,
+            f"{model_name.replace('/', '_')}_{hash_messages}.json",
+        )
+
+        if os.path.exists(cache_file):
+            with open(cache_file) as f:
+                response = json.load(f)
+        else:
+            # get the response from the model and cache it if it is not cached
+            response = self._get_response(messages, model_name, model_config)
+
+        return response
+
     def _run_single_model_single_dataset(
         self,
         dataset: BenchmarkDataset,
@@ -318,28 +344,26 @@ class NanonetsIDPBenchmark:
             template = model_config["template"][dataset.task]
 
         pred_with_gt = []
-
-        for data in tqdm(
-            dataset.data,
-            desc=f"Running benchmark for {model_name} on {dataset.name}",
-            leave=False,
-        ):
-            messages = self._get_messages(data, template, dataset.task)
-
-            # check if the response is cached
-            hash_messages = hashlib.sha256(str(messages).encode()).hexdigest()
-            cache_file = os.path.join(
-                self.cache_dir,
-                f"{model_name.replace('/', '_')}_{hash_messages}.json",
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            futures = list(
+                tqdm(
+                    executor.map(
+                        self._process_item,
+                        dataset.data,
+                        repeat(template),
+                        repeat(dataset.task),
+                        repeat(model_name),
+                        repeat(model_config),
+                    ),
+                    total=len(dataset.data),
+                    desc=f"Running benchmark for {model_name} on {dataset.name}",
+                    leave=False,
+                )
             )
 
-            if os.path.exists(cache_file):
-                with open(cache_file) as f:
-                    response = json.load(f)
-            else:
-                # get the response from the model and cache it if it is not cached
-                response = self._get_response(messages, model_name, model_config)
+        responses = list(futures)
 
+        for response, data in zip(responses, dataset.data):
             # parse the response
             parsed_response = self._parse_response(response, dataset.task)
             if dataset.task == "KIE":
@@ -399,7 +423,9 @@ class NanonetsIDPBenchmark:
                             image_paths=data.image_paths,
                             classification=Classification(
                                 doc_type=parsed_response,
-                                labels=data.classification.labels,
+                                labels=data.classification.labels
+                                if data.classification is not None
+                                else [],
                             ),
                         ),
                     ),
