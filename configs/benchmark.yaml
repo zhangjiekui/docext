@@ -29,6 +29,9 @@ docile:
 handwritten_forms:
   hf_name: "Rasi1610/DeathSe43_44_checkbox"
   test_split: "val"
+nanonets_kie:
+  hf_name: "nanonets/key_information_extraction"
+  test_split: "test"
 
 ## OCR datasets
 ocr_handwriting:

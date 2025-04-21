@@ -241,7 +241,20 @@ class NanonetsIDPBenchmark:
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
                 )
-
+            elif dataset.name == "nanonets_kie":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["nanonets_kie"].get("max_samples", 1000),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["nanonets_kie"]["hf_name"],
+                        test_split=self.benchmark_config["nanonets_kie"]["test_split"],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
             else:
                 raise ValueError(f"Dataset {dataset.name} is not supported.")
         return init_datasets

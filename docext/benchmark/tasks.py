@@ -24,14 +24,12 @@ from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.longdocbench import NanonetsLongDocBench
 from docext.benchmark.vlm_datasets.nanonets_cls import NanonetsCls
+from docext.benchmark.vlm_datasets.nanonets_kie import NanonetsKIE
 from docext.benchmark.vlm_datasets.ocr_dia import OCRDiacritics
 from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingHAT2023
 from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingRotated
 
-KIE_DATASETS = [
-    Docile,
-    DeathSe43_44_checkbox,
-]
+KIE_DATASETS = [NanonetsKIE, Docile, DeathSe43_44_checkbox]
 
 OCR_DATASETS = [
     OCRHandwritingHAT2023,
