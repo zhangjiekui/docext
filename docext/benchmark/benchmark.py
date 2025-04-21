@@ -25,10 +25,12 @@ from tenacity import stop_after_attempt
 from tenacity import wait_exponential
 from tqdm import tqdm
 
+from docext.benchmark.metrics.classification import get_classification_metrics
 from docext.benchmark.metrics.kie import get_kie_metrics
 from docext.benchmark.metrics.ocr import get_ocr_metrics
 from docext.benchmark.metrics.vqa import get_vqa__metric_for_multiple_possible_answers
 from docext.benchmark.metrics.vqa import get_vqa_metrics
+from docext.benchmark.tasks import get_CLASSIFICATION_messages
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
 from docext.benchmark.tasks import get_OCR_messages
@@ -36,6 +38,7 @@ from docext.benchmark.tasks import get_VQA_messages
 from docext.benchmark.utils import load_yaml
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
+from docext.benchmark.vlm_datasets.ds import Classification
 from docext.benchmark.vlm_datasets.ds import PredField
 from docext.benchmark.vlm_datasets.ds import Prediction
 from docext.benchmark.vlm_datasets.ds import VQA
@@ -64,6 +67,7 @@ class NanonetsIDPBenchmark:
             "KIE": self.benchmark_config["KIE_default_template"],
             "OCR": self.benchmark_config["OCR_default_template"],
             "VQA": self.benchmark_config["VQA_default_template"],
+            "CLASSIFICATION": self.benchmark_config["CLASSIFICATION_default_template"],
         }
 
         # run the benchmark, Note we cache each query. incase something fails, we can resume from the same point
@@ -223,6 +227,21 @@ class NanonetsIDPBenchmark:
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
                 )
+            elif dataset.name == "nanonets_cls":
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config["nanonets_cls"].get("max_samples", 1000),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config["nanonets_cls"]["hf_name"],
+                        test_split=self.benchmark_config["nanonets_cls"]["test_split"],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
+
             else:
                 raise ValueError(f"Dataset {dataset.name} is not supported.")
         return init_datasets
@@ -358,6 +377,20 @@ class NanonetsIDPBenchmark:
                     ),
                 )
 
+            elif dataset.task == "CLASSIFICATION":
+                pred_with_gt.append(
+                    Prediction(
+                        gt=data,
+                        pred=BenchmarkData(
+                            extraction_type=data.extraction_type,
+                            image_paths=data.image_paths,
+                            classification=Classification(
+                                doc_type=parsed_response,
+                                labels=data.classification.labels,
+                            ),
+                        ),
+                    ),
+                )
         if dataset.task == "KIE":
             return get_kie_metrics(pred_with_gt)
         elif dataset.task == "OCR":
@@ -371,6 +404,8 @@ class NanonetsIDPBenchmark:
                 )  # gpt-4o sometimes returns Page 1 sometimes just 1.
             else:
                 return get_vqa_metrics(pred_with_gt)
+        elif dataset.task == "CLASSIFICATION":
+            return get_classification_metrics(pred_with_gt)
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
@@ -384,6 +419,8 @@ class NanonetsIDPBenchmark:
             return get_OCR_messages(data, template)
         elif task == "VQA":
             return get_VQA_messages(data, template)
+        elif task == "CLASSIFICATION":
+            return get_CLASSIFICATION_messages(data, template)
         else:
             raise ValueError(f"Task {task} is not supported.")
 
@@ -397,7 +434,6 @@ class NanonetsIDPBenchmark:
         model_name: str,
         model_config: dict[str, Any],
     ):
-
         response = completion(
             model=model_name,
             messages=messages,
@@ -411,8 +447,8 @@ class NanonetsIDPBenchmark:
         return response
 
     def _parse_response(self, response: dict, task: str):
-        if task == "OCR" or task == "VQA":
-            # OCR and VQA task returns a string
+        if task == "OCR" or task == "VQA" or task == "CLASSIFICATION":
+            # OCR and VQA, Classification task returns a string
             answer = (
                 response["choices"][0]["message"]["content"]
                 if len(response["choices"]) > 0

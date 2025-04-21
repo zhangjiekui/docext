@@ -23,6 +23,7 @@ from docext.benchmark.vlm_datasets.docvqa import DocVQA
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.longdocbench import NanonetsLongDocBench
+from docext.benchmark.vlm_datasets.nanonets_cls import NanonetsCls
 from docext.benchmark.vlm_datasets.ocr_dia import OCRDiacritics
 from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingHAT2023
 from docext.benchmark.vlm_datasets.ocr_hw import OCRHandwritingRotated
@@ -44,10 +45,15 @@ VQA_DATASETS = [
     NanonetsLongDocBench,
 ]
 
+CLASSIFICATION_DATASETS = [
+    NanonetsCls,
+]
+
 TASKS2DATASETS = {
     "KIE": KIE_DATASETS,
     "OCR": OCR_DATASETS,
     "VQA": VQA_DATASETS,
+    "CLASSIFICATION": CLASSIFICATION_DATASETS,
 }
 
 
@@ -61,6 +67,40 @@ def get_datasets(
     if datasets is not None:
         all_datasets = [d for d in all_datasets if d.name in datasets]
     return all_datasets
+
+
+def get_CLASSIFICATION_messages(data: BenchmarkData, template: dict[str, Any]):
+    image_paths = data.image_paths
+    labels = data.classification.labels if data.classification is not None else []
+    assert len(labels) > 0, "No labels found in the data"
+    system_prompt = template["system_prompt"].format(labels=labels)
+    user_prompt = template["user_prompt"].format(labels=labels)
+    document_page_seperator = template["document_page_seperator"]
+    image_user_messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": document_page_seperator.format(page_number=i + 1),
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                    },
+                },
+            ],
+        }
+        for i, filepath in enumerate(image_paths)
+    ]
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        *image_user_messages,
+        {"role": "user", "content": user_prompt},
+    ]
+    return messages
 
 
 def get_VQA_messages(data: BenchmarkData, template: dict[str, Any]):

@@ -2,6 +2,7 @@ tasks:
   - KIE # Key Information Extraction
   - OCR # Optical Character Recognition
   - VQA # Visual Question Answering
+  - CLASSIFICATION # Classification
 
 datasets:  # leave it empty to consider all the datasets
 models: [
@@ -50,18 +51,24 @@ ocr_handwriting_rotated:
 chartqa:
   hf_name: "HuggingFaceM4/ChartQA"
   test_split: "test"
-  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+  max_samples: 1000
 
 docvqa:
   hf_name: "lmms-lab/DocVQA"
   test_split: "DocVQA"
-  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+  max_samples: 1000
 
 nanonets_longdocbench:
   hf_name: "Rasi1610/DeathSe43_44_checkbox"
   test_split: "val"
   additional_docs_count: 20
-  max_samples: 5 # we take the min of max_samples_per_dataset and max_samples, if both are set
+  max_samples: 5
+
+## classification datasets
+nanonets_cls:
+  hf_name: "nanonets/Nanonets-Cls-Full"
+  test_split: "test"
+  max_samples: 2 # this is max samples per class
 
 # Default Templates
 KIE_default_template:
@@ -78,6 +85,11 @@ VQA_default_template:
   system_prompt: "You are a helpful and intelligent Vision-Language Model (VLM). When a user shares an image, your primary task is to extract relevant visual and textual information from the image and answer the user's questions accurately based on the image content. If the user asks a question that cannot be answered from the image alone, return ''. Always ground your answers in the image content unless otherwise specified."
   document_page_seperator: "Page {page_number}"
   user_prompt: "Answer the following question based on the images shared: {question}. Do not give any explanation. Just return the answer. If the answer is a number, return it as a number and not a string (eg. Return 3 instead of Three)."
+
+CLASSIFICATION_default_template:
+  system_prompt: "You are a helpful assistant that classifies documents into one of the following categories: {labels}. Your task is to classify the document based on the content of the document."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Classify the following document into one of the following categories: {labels}. Do not give any explanation. Just return the category."
 
 # model configs
 gpt-4o-mini:

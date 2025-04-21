@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import io
 import os
 import random
 from enum import Enum
-from typing import List
-from typing import Optional
-from typing import Union
 
 from loguru import logger
+from PIL import Image
 from pydantic import BaseModel
 from tqdm import tqdm
 
@@ -45,6 +44,11 @@ class VQA(BaseModel):
     answer: str | list[str]
 
 
+class Classification(BaseModel):
+    doc_type: str
+    labels: list[str]
+
+
 class PredField(Field):
     # predicted field
     confidence: float
@@ -55,7 +59,7 @@ class BenchmarkData(BaseModel):
     extraction_type: ExtractionType
     fields: list[Field | PredField] | None = None
     ocr_text: str | None = None
-    classification: str | None = None
+    classification: Classification | None = None
     vqa: VQA | None = None
 
 
@@ -108,6 +112,12 @@ class BenchmarkDataset:
             cache_dir = os.path.join(cache_dir, dataset_name)
             os.makedirs(cache_dir, exist_ok=True)
         return cache_dir
+
+    def bytes_to_image(self, image_bytes: bytes):
+        return Image.open(io.BytesIO(image_bytes))
+
+    def __getitem__(self, index: int):
+        return self.data[index]
 
     @property
     def name(self):
