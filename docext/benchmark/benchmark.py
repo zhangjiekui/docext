@@ -269,13 +269,13 @@ class NanonetsIDPBenchmark:
             all_scores[dataset.name] = {}
             all_costs[dataset.name] = {}
             for model_name in self.models:
-                benchmark_scores, total_cost = self._run_single_model_single_dataset(
+                benchmark_scores, avg_cost = self._run_single_model_single_dataset(
                     dataset,
                     model_name,
                     self.models[model_name],
                 )
                 all_scores[dataset.name][model_name] = benchmark_scores
-                all_costs[dataset.name][model_name] = total_cost
+                all_costs[dataset.name][model_name] = avg_cost
         df = pd.DataFrame(all_scores)
         df["average"] = df.mean(axis=1)
         df = df[["average"] + list(df.columns[:-1])]
@@ -440,20 +440,22 @@ class NanonetsIDPBenchmark:
                         ),
                     ),
                 )
+
+        avg_cost = total_cost / len(responses)
         if dataset.task == "KIE":
-            return get_kie_metrics(pred_with_gt), total_cost
+            return get_kie_metrics(pred_with_gt), avg_cost
         elif dataset.task == "OCR":
-            return get_ocr_metrics(pred_with_gt), total_cost
+            return get_ocr_metrics(pred_with_gt), avg_cost
         elif dataset.task == "VQA":
             if dataset.name == "docvqa":
                 return (
                     get_vqa__metric_for_multiple_possible_answers(pred_with_gt),
-                    total_cost,
+                    avg_cost,
                 )
             else:
-                return get_vqa_metrics(pred_with_gt), total_cost
+                return get_vqa_metrics(pred_with_gt), avg_cost
         elif dataset.task == "CLASSIFICATION":
-            return get_classification_metrics(pred_with_gt), total_cost
+            return get_classification_metrics(pred_with_gt), avg_cost
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
