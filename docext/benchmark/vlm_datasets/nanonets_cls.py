@@ -44,11 +44,14 @@ class NanonetsCls(BenchmarkDataset):
             return dataset
         sampled_data = []
         for class_label in class_labels:
-            class_data = dataset.filter(lambda x: x["label"] == class_label)
-            if len(class_data) > max_samples:
-                sampled_data.extend(class_data.select(range(max_samples)))
+            class_ids = [
+                i for i in range(len(dataset)) if dataset[i]["label"] == class_label
+            ]
+            sorted_class_ids = sorted(class_ids)
+            if len(class_ids) > max_samples:
+                sampled_data.extend(dataset.select(sorted_class_ids[:max_samples]))
             else:
-                sampled_data.extend(class_data)
+                sampled_data.extend(dataset.select(sorted_class_ids))
         return sampled_data
 
     def _load_data(
@@ -59,7 +62,7 @@ class NanonetsCls(BenchmarkDataset):
         cache_dir: str = "./docext_benchmark_cache",
     ):
         test_data = load_dataset(hf_name, split=test_split)
-        class_labels = list(set(test_data["label"]))
+        class_labels = sorted(list(set(test_data["label"])))
         test_data = (
             self.sample_class_wise_max_samples(test_data, max_samples, class_labels)
             if max_samples is not None
@@ -79,6 +82,7 @@ class NanonetsCls(BenchmarkDataset):
             image_paths = []
             for j, image in enumerate(images):
                 image_path = os.path.join(cache_dir, f"{i}_{j}.png")
+                image = self.resize_image(image)
                 image.save(image_path)
                 image_paths.append(image_path)
 

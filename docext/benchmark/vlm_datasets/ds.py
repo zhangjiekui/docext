@@ -183,3 +183,9 @@ class BenchmarkDataset:
             for field in sample.fields:
                 all_fields.append(field.label)
         return list(set(all_fields))
+
+    def resize_image(self, image: Image.Image, max_size: int = 1024):
+        width, height = image.size
+        if width > 1024 or height > 1024:
+            image = image.resize((max_size, max_size))
+        return image
