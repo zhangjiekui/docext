@@ -115,9 +115,15 @@ class NanonetsLongDocBench(BenchmarkDataset):
             data_point = test_data[i]
             image, ground_truth = data_point["image"], data_point["ground_truth"]
             gt_answer = self._get_kie_data(ground_truth)
+
+            # select a random field to ask
+            random.seed(i)
+            field2ask = random.choice(list(gt_answer.keys()))
+            field2ask_answer = gt_answer[field2ask]
             gt_answer_object = [
                 Field(label=k, value=v, description=FIELDS_DESCRIPTIONS.get(k, None))
                 for k, v in gt_answer.items()
+                if k != field2ask
             ]
             random.seed(i)
             random_image_order = random.sample(
@@ -128,18 +134,18 @@ class NanonetsLongDocBench(BenchmarkDataset):
             image.save(image_path)
 
             # Create 4 different lists with test image inserted at different positions
-            insertion_points = [0, 30, 60, 100]
+            insertion_points = [30, 60]
             for pos in insertion_points:
                 insert_idx = int(len(random_image_order) * pos / 100)
                 new_list = random_image_order.copy()
                 new_list.insert(insert_idx, image_path)
 
-                question = f"What is the page number for the image which has the following information: {gt_answer_object}. Just return the page number in the following format: 'Page <page_number>', eg. First page should be 'Page 1'"
-                answer = f"Page {insert_idx + 1}"
+                question = f"Extract {field2ask} from the image which has the following information: {gt_answer_object}. Just return the answer. Do not include any other text."
+                answer = f"{field2ask_answer}"
                 data.append(
                     BenchmarkData(
                         image_paths=new_list,
-                        extraction_type=ExtractionType.FIELD,
+                        extraction_type=ExtractionType.VQA,
                         vqa=VQA(question=question, answer=answer),
                         classification=None,
                     ),
