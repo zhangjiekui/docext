@@ -6,7 +6,7 @@ tasks:
 
 datasets:  # leave it empty to consider all the datasets
 models: [
-  "gpt-4o-mini",
+  "gpt-4o-mini-2024-07-18",
   "gpt-4.1-2025-04-14",
   "gpt-4o-2024-08-06",
   "gemini/gemini-2.0-flash",
@@ -96,7 +96,7 @@ CLASSIFICATION_default_template:
   user_prompt: "Classify the following document into one of the following categories: {labels}. Do not give any explanation. Just return the category."
 
 # model configs
-gpt-4o-mini:
+gpt-4o-mini-2024-07-18:
   max_tokens: 3000
   temperature: 0.0
   template:
