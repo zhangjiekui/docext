@@ -79,6 +79,7 @@ class NanonetsIDPBenchmark:
         os.makedirs(self.cache_dir, exist_ok=True)
 
         self.max_workers = self.benchmark_config.get("max_workers", 1)
+        self.ignore_cache = self.benchmark_config.get("ignore_cache", False)
 
     def _get_datasets(self):
         datasets = get_datasets(
@@ -263,23 +264,31 @@ class NanonetsIDPBenchmark:
 
     def run_benchmark(self):
         all_scores = {}
-
+        all_costs = {}
         for dataset in tqdm(self.datasets):
             all_scores[dataset.name] = {}
+            all_costs[dataset.name] = {}
             for model_name in self.models:
-                benchmark_scores = self._run_single_model_single_dataset(
+                benchmark_scores, total_cost = self._run_single_model_single_dataset(
                     dataset,
                     model_name,
                     self.models[model_name],
                 )
                 all_scores[dataset.name][model_name] = benchmark_scores
-
+                all_costs[dataset.name][model_name] = total_cost
         df = pd.DataFrame(all_scores)
         df["average"] = df.mean(axis=1)
         df = df[["average"] + list(df.columns[:-1])]
         df = df.sort_values(by="average", ascending=False)
-        logger.info("\n" + df.to_string())
-        return all_scores
+        logger.info("ACCURACY:\n" + df.to_string())
+
+        # for cost show the avg for each model
+        df_cost = pd.DataFrame(all_costs)
+        df_cost = df_cost.mean(axis=1)
+        # sort the df_cost by the index
+        df_cost = df_cost.sort_index()
+        logger.info("COST:\n" + df_cost.to_string())
+        return all_scores, all_costs
 
     def _get_prediction_cache_files(self, dataset: BenchmarkDataset, model_name: str):
         template = self.templates[dataset.task]
@@ -323,7 +332,7 @@ class NanonetsIDPBenchmark:
             f"{model_name.replace('/', '_')}_{hash_messages}.json",
         )
 
-        if os.path.exists(cache_file):
+        if os.path.exists(cache_file) and not self.ignore_cache:
             with open(cache_file) as f:
                 response = json.load(f)
         else:
@@ -362,8 +371,9 @@ class NanonetsIDPBenchmark:
             )
 
         responses = list(futures)
-
+        total_cost = 0
         for response, data in zip(responses, dataset.data):
+            total_cost += response["response_cost"]
             # parse the response
             parsed_response = self._parse_response(response, dataset.task)
             if dataset.task == "KIE":
@@ -431,20 +441,19 @@ class NanonetsIDPBenchmark:
                     ),
                 )
         if dataset.task == "KIE":
-            return get_kie_metrics(pred_with_gt)
+            return get_kie_metrics(pred_with_gt), total_cost
         elif dataset.task == "OCR":
-            return get_ocr_metrics(pred_with_gt)
+            return get_ocr_metrics(pred_with_gt), total_cost
         elif dataset.task == "VQA":
             if dataset.name == "docvqa":
-                return get_vqa__metric_for_multiple_possible_answers(pred_with_gt)
-            elif dataset.name == "nanonets_longdocbench":
-                return get_vqa_metrics(
-                    pred_with_gt, strip_page=True
-                )  # gpt-4o sometimes returns Page 1 sometimes just 1.
+                return (
+                    get_vqa__metric_for_multiple_possible_answers(pred_with_gt),
+                    total_cost,
+                )
             else:
-                return get_vqa_metrics(pred_with_gt)
+                return get_vqa_metrics(pred_with_gt), total_cost
         elif dataset.task == "CLASSIFICATION":
-            return get_classification_metrics(pred_with_gt)
+            return get_classification_metrics(pred_with_gt), total_cost
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
@@ -465,7 +474,7 @@ class NanonetsIDPBenchmark:
 
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=20, min=20, max=600),
+        wait=wait_exponential(multiplier=2, min=2, max=60),
     )
     def _get_response(
         self,
@@ -481,7 +490,16 @@ class NanonetsIDPBenchmark:
             temperature=model_config.get("temperature", 0.0),
             # max_retries=3,
         )
+        response_cost = response._hidden_params["response_cost"]
+        token_counter = (
+            response._hidden_params["token_counter"]
+            if "token_counter" in response._hidden_params
+            else -1
+        )
         response = response.json()
+        response["response_cost"] = response_cost
+        response["token_counter"] = token_counter
+
         self._cache_response(messages, model_name, response)
         return response
 
