@@ -373,7 +373,11 @@ class NanonetsIDPBenchmark:
         responses = list(futures)
         total_cost = 0
         for response, data in zip(responses, dataset.data):
-            total_cost += response["response_cost"]
+            total_cost += (
+                response["response_cost"]
+                if response["response_cost"] is not None
+                else 0
+            )
             # parse the response
             parsed_response = self._parse_response(response, dataset.task)
             if dataset.task == "KIE":
@@ -527,14 +531,16 @@ class NanonetsIDPBenchmark:
             # merge all the keys into a single dict
             merged_dict = {}
             for item in parsed_json:
-                for key, value in item.items():
-                    if key not in merged_dict:
-                        merged_dict[key] = value
-                    else:
-                        if isinstance(merged_dict[key], list):
-                            merged_dict[key].append(value)
+                if isinstance(item, dict):
+                    for key, value in item.items():
+                        if key not in merged_dict:
+                            merged_dict[key] = value
                         else:
-                            merged_dict[key] = [merged_dict[key], value]
+                            if isinstance(merged_dict[key], list):
+                                merged_dict[key].append(value)
+                            else:
+                                merged_dict[key] = [merged_dict[key], value]
+                # we ignore the other types of objects, the model should not return them
             return merged_dict
 
         if parsed_json == "":
