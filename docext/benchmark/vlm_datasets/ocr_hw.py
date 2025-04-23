@@ -11,9 +11,9 @@ import os
 import random
 from typing import Optional
 
-from datasets import load_dataset
 from tqdm import tqdm
 
+from datasets import load_dataset
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.ds import ExtractionType
@@ -61,7 +61,7 @@ class OCRHandwritingHAT2023(BenchmarkDataset):
             if self.rotation:
                 random.seed(i)
                 small_angle = random.choice(range(-5, 5))
-                image = image.rotate(small_angle)
+                image = image.rotate(small_angle, expand=True)
 
             # save the image
             image_path = os.path.join(cache_dir, f"{i}.png")
