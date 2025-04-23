@@ -5,9 +5,11 @@ import os
 import random
 from enum import Enum
 
+import pandas as pd
 from loguru import logger
 from PIL import Image
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from tqdm import tqdm
 
 from docext.benchmark.vlm_datasets.utils import convert_pdf2image
@@ -54,10 +56,26 @@ class PredField(Field):
     confidence: float
 
 
+class Table(BaseModel):
+    table: pd.DataFrame
+    columns: list[str]
+    cell_boxes: list[BBox] | None = None
+    name: str | None = None
+    description: str | None = None
+    bbox: BBox | None = None
+    page_path: str | None = (
+        None  # for multi-page documents, this is the path to the page image
+    )
+    page_number: int | None = None  # for multi-page documents, this is the page number
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
 class BenchmarkData(BaseModel):
     image_paths: list[str]
     extraction_type: ExtractionType
     fields: list[Field | PredField] | None = None
+    tables: list[Table] | None = None
     ocr_text: str | None = None
     classification: Classification | None = None
     vqa: VQA | None = None
