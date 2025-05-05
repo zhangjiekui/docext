@@ -204,6 +204,6 @@ class BenchmarkDataset:
 
     def resize_image(self, image: Image.Image, max_size: int = 1024):
         width, height = image.size
-        if width > 1024 or height > 1024:
+        if width > max_size or height > max_size:
             image = image.resize((max_size, max_size))
         return image

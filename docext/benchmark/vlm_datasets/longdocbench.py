@@ -102,6 +102,7 @@ class NanonetsLongDocBench(BenchmarkDataset):
             data_point = additional_docs[i]
             image = data_point["image"]
             image_path = os.path.join(cache_dir, f"additional_docs_{i}.png")
+            image = self.resize_image(image)
             image.save(image_path)
             additional_docs_image_paths.append(image_path)
 
@@ -131,6 +132,7 @@ class NanonetsLongDocBench(BenchmarkDataset):
             )
             # save the image
             image_path = os.path.join(cache_dir, f"{i}.png")
+            image = self.resize_image(image)
             image.save(image_path)
 
             # Create 4 different lists with test image inserted at different positions
