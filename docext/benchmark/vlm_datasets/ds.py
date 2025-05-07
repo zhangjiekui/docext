@@ -4,6 +4,7 @@ import io
 import os
 import random
 from enum import Enum
+from typing import Union
 
 import pandas as pd
 from loguru import logger
@@ -58,7 +59,7 @@ class PredField(Field):
 
 class Table(BaseModel):
     table: pd.DataFrame
-    columns: list[str]
+    columns: list[str | int]
     cell_boxes: list[BBox] | None = None
     name: str | None = None
     description: str | None = None
