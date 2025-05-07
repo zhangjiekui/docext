@@ -17,6 +17,7 @@ from itertools import repeat
 from typing import Any
 
 import json_repair
+import mdpd
 import pandas as pd
 from litellm import completion
 from loguru import logger
@@ -28,19 +29,23 @@ from tqdm import tqdm
 from docext.benchmark.metrics.classification import get_classification_metrics
 from docext.benchmark.metrics.kie import get_kie_metrics
 from docext.benchmark.metrics.ocr import get_ocr_metrics
+from docext.benchmark.metrics.tables import get_table_metrics
 from docext.benchmark.metrics.vqa import get_vqa__metric_for_multiple_possible_answers
 from docext.benchmark.metrics.vqa import get_vqa_metrics
 from docext.benchmark.tasks import get_CLASSIFICATION_messages
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
 from docext.benchmark.tasks import get_OCR_messages
+from docext.benchmark.tasks import get_TABLE_messages
 from docext.benchmark.tasks import get_VQA_messages
+from docext.benchmark.tasks import TABLE_DATASETS
 from docext.benchmark.utils import load_yaml
 from docext.benchmark.vlm_datasets.ds import BenchmarkData
 from docext.benchmark.vlm_datasets.ds import BenchmarkDataset
 from docext.benchmark.vlm_datasets.ds import Classification
 from docext.benchmark.vlm_datasets.ds import PredField
 from docext.benchmark.vlm_datasets.ds import Prediction
+from docext.benchmark.vlm_datasets.ds import Table
 from docext.benchmark.vlm_datasets.ds import VQA
 
 
@@ -68,6 +73,7 @@ class NanonetsIDPBenchmark:
             "OCR": self.benchmark_config["OCR_default_template"],
             "VQA": self.benchmark_config["VQA_default_template"],
             "CLASSIFICATION": self.benchmark_config["CLASSIFICATION_default_template"],
+            "TABLE": self.benchmark_config["TABLE_default_template"],
         }
 
         # run the benchmark, Note we cache each query. incase something fails, we can resume from the same point
@@ -258,6 +264,21 @@ class NanonetsIDPBenchmark:
                         cache_dir=self.benchmark_config.get("cache_dir", None),
                     ),
                 )
+
+            elif dataset.name in [ds.name for ds in TABLE_DATASETS]:
+                max_samples = self.benchmark_config.get("max_samples_per_dataset", None)
+                max_samples = min(
+                    max_samples,
+                    self.benchmark_config[dataset.name].get("max_samples", 1000),
+                )
+                init_datasets.append(
+                    dataset(
+                        hf_name=self.benchmark_config[dataset.name]["hf_name"],
+                        test_split=self.benchmark_config[dataset.name]["test_split"],
+                        max_samples=max_samples,
+                        cache_dir=self.benchmark_config.get("cache_dir", None),
+                    ),
+                )
             else:
                 raise ValueError(f"Dataset {dataset.name} is not supported.")
         return init_datasets
@@ -282,12 +303,16 @@ class NanonetsIDPBenchmark:
         df = df.sort_values(by="average", ascending=False)
         logger.info("ACCURACY:\n" + df.to_string())
 
+        ## save the df to a csv file
+        df.to_csv("accuracy.csv", index=True)
+
         # for cost show the avg for each model
         df_cost = pd.DataFrame(all_costs)
         df_cost = df_cost.mean(axis=1)
         # sort the df_cost by the index
         df_cost = df_cost.sort_index()
         logger.info("COST:\n" + df_cost.to_string())
+        df_cost.to_csv("cost.csv", index=True)
         return all_scores, all_costs
 
     def _get_prediction_cache_files(self, dataset: BenchmarkDataset, model_name: str):
@@ -335,10 +360,16 @@ class NanonetsIDPBenchmark:
         if os.path.exists(cache_file) and not self.ignore_cache:
             with open(cache_file) as f:
                 response = json.load(f)
-        else:
-            # get the response from the model and cache it if it is not cached
-            response = self._get_response(messages, model_name, model_config)
-
+            # return response
+            if (
+                len(response["choices"]) > 0
+                and response["choices"][0]["message"]["content"] not in [None, ""]
+                and response["choices"][0]["finish_reason"] == "stop"
+            ):
+                return response
+        # get the response from the model and cache it if it is not cached
+        response = self._get_response(messages, model_name, model_config)
+        # assert len(response["choices"]) > 0 and response["choices"][0]["message"]["content"] not in [None, ""] and response["choices"][0]["finish_reason"] == "stop"
         return response
 
     def _run_single_model_single_dataset(
@@ -444,6 +475,28 @@ class NanonetsIDPBenchmark:
                         ),
                     ),
                 )
+            elif dataset.task == "TABLE":
+                parsed_response = (
+                    [parsed_response]
+                    if isinstance(parsed_response, pd.DataFrame)
+                    else parsed_response
+                )
+                pred_with_gt.append(
+                    Prediction(
+                        gt=data,
+                        pred=BenchmarkData(
+                            image_paths=data.image_paths,
+                            extraction_type=data.extraction_type,
+                            tables=[
+                                Table(
+                                    table=table,
+                                    columns=table.columns.tolist(),
+                                )
+                                for table in parsed_response
+                            ],
+                        ),
+                    ),
+                )
 
         avg_cost = total_cost / len(responses)
         if dataset.task == "KIE":
@@ -460,6 +513,8 @@ class NanonetsIDPBenchmark:
                 return get_vqa_metrics(pred_with_gt), avg_cost
         elif dataset.task == "CLASSIFICATION":
             return get_classification_metrics(pred_with_gt), avg_cost
+        elif dataset.task == "TABLE":
+            return get_table_metrics(pred_with_gt), avg_cost
         else:
             raise ValueError(f"Task {dataset.task} is not supported.")
 
@@ -475,6 +530,8 @@ class NanonetsIDPBenchmark:
             return get_VQA_messages(data, template)
         elif task == "CLASSIFICATION":
             return get_CLASSIFICATION_messages(data, template)
+        elif task == "TABLE":
+            return get_TABLE_messages(data, template)
         else:
             raise ValueError(f"Task {task} is not supported.")
 
@@ -494,7 +551,8 @@ class NanonetsIDPBenchmark:
             max_tokens=model_config.get("max_tokens", None),
             max_completion_tokens=model_config.get("max_completion_tokens", None),
             temperature=model_config.get("temperature", 0.0),
-            # max_retries=3,
+            reasoning_effort="medium",
+            drop_params=True,
         )
         response_cost = response._hidden_params["response_cost"]
         token_counter = (
@@ -519,6 +577,23 @@ class NanonetsIDPBenchmark:
                 else ""
             )
             return answer.strip() if answer else ""
+        elif task == "TABLE":
+            response = response["choices"][0]["message"]["content"]
+
+            # convert the parsed_json to a dataframe
+            try:
+                parsed_json = json_repair.repair_json(
+                    response, ensure_ascii=False, return_objects=True
+                )
+                if isinstance(parsed_json[0], list):
+                    df = pd.concat([pd.DataFrame(item) for item in parsed_json])
+                else:
+                    df = pd.DataFrame(parsed_json)
+                return df
+            except Exception as e:
+                print(f"Error parsing table: {e}")
+                return pd.DataFrame()
+
         parsed_json = json_repair.repair_json(
             response["choices"][0]["message"]["content"]
             if len(response["choices"]) > 0
