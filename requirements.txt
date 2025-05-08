@@ -6,9 +6,11 @@ loguru
 mdpd
 pandas
 python-dotenv
+python-levenshtein==0.27.1
 requests
 setuptools
 tabulate
+tenacity
 types-requests
 vllm==v0.8.3
 xgrammar==0.1.17

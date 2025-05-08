@@ -1,0 +1,223 @@
+tasks:
+  - KIE # Key Information Extraction
+  - OCR # Optical Character Recognition
+  - VQA # Visual Question Answering, LongDocBench
+  - CLASSIFICATION # Classification
+  - TABLE # Table
+
+datasets:  # leave it empty to consider all the datasets
+  # - nanonets_kie
+  # - nanonets_longdocbench
+models: [
+  "gpt-4o-mini-2024-07-18",
+  "gpt-4.1-2025-04-14",
+  "gpt-4o-2024-08-06",
+  "gpt-4o-2024-11-20",
+  "gemini/gemini-2.5-flash-preview-04-17",
+  "gemini/gemini-2.0-flash",
+  "o4-mini-2025-04-16",
+  # "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+  # "bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0",
+  # "openrouter/anthropic/claude-3.7-sonnet",
+  # "openrouter/anthropic/claude-3.5-sonnet",
+  "openrouter/meta-llama/llama-4-maverick",
+  "openrouter/qwen/qwen2.5-vl-72b-instruct",
+  # "openrouter/qwen/qwen-2.5-vl-7b-instruct",
+  "openrouter/mistralai/mistral-small-3.1-24b-instruct",
+  ]
+
+
+cache_dir: "./docext_benchmark_cache"
+max_samples_per_dataset: 1000 # set this to a positive number to limit the number of samples per dataset
+max_workers: 4
+ignore_cache: false
+
+# dataset configs
+## KIE datasets
+docile:
+  annot_path: "/home/paperspace/projects/datasets/docile/data/docile/val.json"
+  annotations_root: /home/paperspace/projects/datasets/docile/data/docile/annotations
+  pdf_root: /home/paperspace/projects/datasets/docile/data/docile/pdfs
+handwritten_forms:
+  hf_name: "Rasi1610/DeathSe43_44_checkbox"
+  test_split: "val"
+nanonets_kie:
+  hf_name: "nanonets/key_information_extraction"
+  test_split: "test"
+
+## OCR datasets
+ocr_handwriting:
+  hf_name: "DataStudio/OCR_handwritting_HAT2023"
+  test_split: "train" # Test set does not have GT annotations, we sample 1000 random samples from train set
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
+digital_ocr_diacritics:
+  hf_name: "ademax/ocr_scan_vi_01"
+  test_split: "test"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+
+ocr_handwriting_rotated:
+  hf_name: "DataStudio/OCR_handwritting_HAT2023"
+  test_split: "train"
+  max_samples: 1000 # we take the min of max_samples_per_dataset and max_samples, if both are set
+  rotation: true
+
+## VQA datasets
+chartqa:
+  hf_name: "HuggingFaceM4/ChartQA"
+  test_split: "test"
+  max_samples: 1000
+
+docvqa:
+  hf_name: "lmms-lab/DocVQA"
+  test_split: "DocVQA"
+  max_samples: 1000
+
+nanonets_longdocbench:
+  hf_name: "Rasi1610/DeathSe43_44_checkbox"
+  test_split: "val"
+  additional_docs_count: 20
+  max_samples: 15
+
+## classification datasets
+nanonets_cls:
+  hf_name: "nanonets/Nanonets-Cls-Full"
+  test_split: "test"
+  max_samples: 200 # this is max samples per class
+
+## table datasets
+nanonets_small_sparse_structured_table:
+  hf_name: nanonets/small_sparse_structured_table
+  test_split: "test"
+  max_samples: 1000
+
+nanonets_small_dense_structured_table:
+  hf_name: nanonets/small_dense_structured_table
+  test_split: "test"
+  max_samples: 1000
+
+nanonets_small_sparse_unstructured_table:
+  hf_name: nanonets/small_sparse_unstructured_table
+  test_split: "test"
+  max_samples: 1000
+
+nanonets_long_dense_structured_table:
+  hf_name: nanonets/long_dense_structured_table
+  test_split: "test"
+  max_samples: 1000
+
+nanonets_long_sparse_structured_table:
+  hf_name: nanonets/long_sparse_structured_table
+  test_split: "test"
+  max_samples: 1000
+
+nanonets_long_sparse_unstructured_table:
+  hf_name: nanonets/long_sparse_unstructured_table
+  test_split: "test"
+  max_samples: 1000
+
+
+# Default Templates
+KIE_default_template:
+  system_prompt: "You are a helpful assistant that extracts information from a document."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Extract the following {fields} from the above document. If a field is not present, return ''. Return the output in a valid JSON format as {output_format}."
+
+OCR_default_template:
+  system_prompt: 'You are an OCR model. Your task is to extract all visible and legible text from images with high accuracy and fidelity.\n\nOutput only the text that appears in the image.\n\nPreserve the natural reading order (e.g., top-to-bottom, left-to-right) as much as possible.\n\nDo not infer, summarize, or add information not explicitly visible in the image.\n\nIf the text is partially visible, extract as much as can be confidently read.\n\nMaintain original formatting when reasonable (e.g., line breaks, spacing).\n\nIf there is no readable text, respond with: ""\n\nYour primary goal is to be accurate, consistent, and faithful to the image content.'
+  user_prompt: "Extract the text from the above document. Do not give any explanation. Just return the text."
+
+
+VQA_default_template:
+  system_prompt: "You are a helpful and intelligent Vision-Language Model (VLM). When a user shares an image, your primary task is to extract relevant visual and textual information from the image and answer the user's questions accurately based on the image content. If the user asks a question that cannot be answered from the image alone, return ''. Always ground your answers in the image content unless otherwise specified."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Answer the following question based on the images shared: {question}. Do not give any explanation. Just return the answer. If the answer is a number, return it as a number and not a string (eg. Return 3 instead of Three)."
+
+CLASSIFICATION_default_template:
+  system_prompt: "You are a helpful assistant that classifies documents into one of the following categories: {labels}. Your task is to classify the document based on the content of the document."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Classify the following document into one of the following categories: {labels}. Do not give any explanation. Just return the category."
+
+TABLE_default_template:
+  system_prompt: "You are a helpful assistant that Tables from a document."
+  document_page_seperator: "Page {page_number}"
+  user_prompt: "Extract the following columns {columns} from the above document. If a cell is not present, return ''. Return a valid JSON object in the following format (row-wise): {output_format}"
+
+# model configs
+gpt-4o-mini-2024-07-18:
+  max_tokens: 15000
+  temperature: 0.0
+  template:
+    KIE: null
+    OCR: null
+    VQA: null
+
+gpt-4.1-2025-04-14:
+  max_tokens: 15000
+  temperature: 0.0
+  template:
+    KIE: null
+
+gpt-4o-2024-08-06:
+  max_tokens: 15000
+  temperature: 0.0
+  template:
+    KIE: null
+
+gpt-4o-2024-11-20:
+  max_tokens: 15000
+  temperature: 0.0
+  template:
+    KIE: null
+
+o4-mini-2025-04-16:
+  max_completion_tokens: 30000
+  temperature: 1.0
+  template:
+    KIE: null
+
+gemini/gemini-2.0-flash:
+  max_tokens: 15000
+  temperature: 0.0
+  template:
+    KIE: null
+
+gemini/gemini-2.5-pro-exp-03-25:
+  max_tokens: 15000
+  temperature: 0.0
+
+gemini/gemini-2.5-flash-preview-04-17:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/meta-llama/llama-4-maverick:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/qwen/qwen2.5-vl-72b-instruct:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/mistralai/mistral-small-3.1-24b-instruct:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/qwen/qwen-2.5-vl-7b-instruct:
+  max_tokens: 15000
+  temperature: 0.0
+
+bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/anthropic/claude-3.7-sonnet:
+  max_tokens: 15000
+  temperature: 0.0
+
+openrouter/anthropic/claude-3.5-sonnet:
+  max_tokens: 15000
+  temperature: 0.0
+
+bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0:
+  max_tokens: 15000
+  temperature: 0.0
