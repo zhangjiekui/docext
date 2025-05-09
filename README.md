@@ -18,7 +18,7 @@
   </a>
 </p>
 
-![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png)
+![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.jpg)
 
 
 
