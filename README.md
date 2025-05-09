@@ -18,10 +18,7 @@
   </a>
 </p>
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png" style="max-width: 45%; height: auto;" />
-  <img src="assets/benchmark.png" style="max-width: 45%; height: auto;" />
-</p>
+![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png)
 
 
 
