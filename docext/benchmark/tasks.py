@@ -95,6 +95,15 @@ def get_datasets(
     return all_datasets
 
 
+def get_image_encoding_type(image_path: str) -> str:
+    if image_path.endswith(".png"):
+        return "data:image/png;base64"
+    elif image_path.endswith(".jpg") or image_path.endswith(".jpeg"):
+        return "data:image/jpeg;base64"
+    else:
+        raise ValueError(f"Unsupported image format: {image_path}")
+
+
 def get_TABLE_messages(data: BenchmarkData, template: dict[str, Any]):
     system_prompt = template["system_prompt"]
     document_page_seperator = template["document_page_seperator"]
@@ -118,7 +127,7 @@ def get_TABLE_messages(data: BenchmarkData, template: dict[str, Any]):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                        "url": f"{get_image_encoding_type(filepath)},{encode_image(filepath)}",
                     },
                 },
             ],
@@ -152,7 +161,7 @@ def get_CLASSIFICATION_messages(data: BenchmarkData, template: dict[str, Any]):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                        "url": f"{get_image_encoding_type(filepath)},{encode_image(filepath)}",
                     },
                 },
             ],
@@ -189,7 +198,7 @@ def get_VQA_messages(data: BenchmarkData, template: dict[str, Any]):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                        "url": f"{get_image_encoding_type(filepath)},{encode_image(filepath)}",
                     },
                 },
             ],
@@ -218,7 +227,7 @@ def get_OCR_messages(data: BenchmarkData, template: dict[str, Any]):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{encode_image(image_path)}",
+                        "url": f"{get_image_encoding_type(image_path)},{encode_image(image_path)}",
                     },
                 },
             ],
@@ -255,7 +264,7 @@ def get_KIE_messages(data: BenchmarkData, template: dict[str, Any]):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{encode_image(filepath)}",
+                        "url": f"{get_image_encoding_type(filepath)},{encode_image(filepath)}",
                     },
                 },
             ],
@@ -268,4 +277,10 @@ def get_KIE_messages(data: BenchmarkData, template: dict[str, Any]):
         *image_user_messages,
         {"role": "user", "content": user_prompt},
     ]
+    return messages
+
+
+def change_system_prompt(messages: list[dict[str, Any]], model_name: str):
+    if "gemma-3-27b-it" in model_name:
+        messages[0] = {"role": "user", "content": messages[0]["content"]}
     return messages
