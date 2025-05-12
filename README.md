@@ -18,7 +18,7 @@
   </a>
 </p>
 
-![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.png)
+![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.jpg)
 
 
 
@@ -59,7 +59,7 @@ For setup instructions and additional details, check out the full feature guide 
   - Passports
   - Add/delete new fields/columns for other templates.
 
-For more details on the features, please check out the [feature guide](https://github.com/NanoNets/docext/tree/main/docext/benchmark).
+For more details on the features, please check out the [feature guide](https://github.com/NanoNets/docext/blob/main/EXT_README.md).
 
 ## About
 
