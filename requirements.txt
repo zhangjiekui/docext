@@ -4,7 +4,9 @@ json-repair
 litellm
 loguru
 mdpd
+numpy
 pandas
+PyMuPDF
 python-dotenv
 python-levenshtein==0.27.1
 requests

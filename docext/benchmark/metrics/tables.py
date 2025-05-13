@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import numpy as np
-from tabeval.grits import grits_from_df
 
+from docext.benchmark.metrics.grits import grits_from_df
 from docext.benchmark.vlm_datasets.ds import Prediction
 
 
