@@ -72,17 +72,6 @@ For more details (Installation, Usage, and so on), please check out the [feature
 
 </details>
 
-## Change Log
-
-### Latest Updates
-- **16-05-2025** – Added gemma-3-27b-it evaluation metrics to the leaderboard.
-- **12-05-2025** – Added Claude 3.7 sonnet, mistral-medium-3 evaluation metrics to the leaderboard.
-
-<details>
-<summary>Older Changes</summary>
-
-</details>
-
 ## About
 
 docext is developed by [Nanonets](https://nanonets.com), a leader in document AI and intelligent document processing solutions. Nanonets is committed to advancing the field of document understanding through open-source contributions and innovative AI technologies. If you are looking for information extraction solutions for your business, please visit [our website](https://nanonets.com) to learn more.
