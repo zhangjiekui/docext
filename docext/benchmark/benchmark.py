@@ -32,6 +32,7 @@ from docext.benchmark.metrics.ocr import get_ocr_metrics
 from docext.benchmark.metrics.tables import get_table_metrics
 from docext.benchmark.metrics.vqa import get_vqa__metric_for_multiple_possible_answers
 from docext.benchmark.metrics.vqa import get_vqa_metrics
+from docext.benchmark.tasks import change_system_prompt
 from docext.benchmark.tasks import get_CLASSIFICATION_messages
 from docext.benchmark.tasks import get_datasets
 from docext.benchmark.tasks import get_KIE_messages
@@ -351,6 +352,7 @@ class NanonetsIDPBenchmark:
         model_config: dict[str, Any],
     ):
         messages = self._get_messages(data, template, task)
+        messages = change_system_prompt(messages, model_name)
         hash_messages = hashlib.sha256(str(messages).encode()).hexdigest()
         cache_file = os.path.join(
             self.cache_dir,
@@ -360,16 +362,20 @@ class NanonetsIDPBenchmark:
         if os.path.exists(cache_file) and not self.ignore_cache:
             with open(cache_file) as f:
                 response = json.load(f)
-            # return response
             if (
                 len(response["choices"]) > 0
-                and response["choices"][0]["message"]["content"] not in [None, ""]
+                # and response["choices"][0]["message"]["content"] not in [None, ""]
                 and response["choices"][0]["finish_reason"] == "stop"
             ):
                 return response
         # get the response from the model and cache it if it is not cached
         response = self._get_response(messages, model_name, model_config)
-        # assert len(response["choices"]) > 0 and response["choices"][0]["message"]["content"] not in [None, ""] and response["choices"][0]["finish_reason"] == "stop"
+        # if response is None:
+        #     return None
+        # if len(response["choices"]) > 0 and response["choices"][0]["finish_reason"] == "stop":
+        #     return response
+        # else:
+        #     breakpoint()
         return response
 
     def _run_single_model_single_dataset(
@@ -402,6 +408,16 @@ class NanonetsIDPBenchmark:
             )
 
         responses = list(futures)
+        old_num_responses = len(responses)
+        # # save the image paths of the None responses.
+        # for response, data in zip(responses, dataset.data):
+        #     if response is None:
+        #         print(data.image_paths)
+        # dataset.data = [data for data, response in zip(dataset.data, responses) if response is not None]
+        # responses = [response for response in responses if response is not None]
+        # assert len(dataset.data) == len(responses)
+        # if old_num_responses != len(responses):
+        #     logger.info(f"Total responses: Before filtering: {old_num_responses}, after filtering: {len(responses)} for {model_name} on {dataset.name}")
         total_cost = 0
         for response, data in zip(responses, dataset.data):
             total_cost += (
@@ -537,7 +553,7 @@ class NanonetsIDPBenchmark:
 
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=2, max=60),
+        wait=wait_exponential(multiplier=10, min=60, max=600),
     )
     def _get_response(
         self,
@@ -545,14 +561,31 @@ class NanonetsIDPBenchmark:
         model_name: str,
         model_config: dict[str, Any],
     ):
+        # import litellm
+        # litellm._turn_on_debug()
+        # breakpoint()
+        if model_name.startswith("hosted_vllm/"):
+            assert (
+                model_config.get("api_key", None) is not None
+            ), "api_key must be provided for hosted_vllm models"
+            assert (
+                model_config.get("api_base", None) is not None
+            ), "api_base must be provided for hosted_vllm models"
+
         response = completion(
             model=model_name,
             messages=messages,
             max_tokens=model_config.get("max_tokens", None),
             max_completion_tokens=model_config.get("max_completion_tokens", None),
             temperature=model_config.get("temperature", 0.0),
-            reasoning_effort="medium",
+            reasoning_effort="low",
             drop_params=True,
+            api_key=model_config.get("api_key", None)
+            if model_name.startswith("hosted_vllm/")
+            else None,
+            api_base=model_config.get("api_base", None)
+            if model_name.startswith("hosted_vllm/")
+            else None,
         )
         response_cost = response._hidden_params["response_cost"]
         token_counter = (
