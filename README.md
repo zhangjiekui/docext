@@ -59,7 +59,18 @@ For setup instructions and additional details, check out the full feature guide 
   - Passports
   - Add/delete new fields/columns for other templates.
 
-For more details on the features, please check out the [feature guide](https://github.com/NanoNets/docext/blob/main/EXT_README.md).
+For more details (Installation, Usage, and so on), please check out the [feature guide](https://github.com/NanoNets/docext/blob/main/EXT_README.md).
+
+## Change Log
+
+### Latest Updates
+- **16-05-2025** – Added `gemma-3-27b-it` evaluation metrics to the leaderboard.
+- **12-05-2025** – Added `Claude 3.7 sonnet`, `mistral-medium-3` evaluation metrics to the leaderboard.
+
+<details>
+<summary>Older Changes</summary>
+
+</details>
 
 ## About
 
