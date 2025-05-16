@@ -564,6 +564,14 @@ class NanonetsIDPBenchmark:
         # import litellm
         # litellm._turn_on_debug()
         # breakpoint()
+        if model_name.startswith("hosted_vllm/"):
+            assert (
+                model_config.get("api_key", None) is not None
+            ), "api_key must be provided for hosted_vllm models"
+            assert (
+                model_config.get("api_base", None) is not None
+            ), "api_base must be provided for hosted_vllm models"
+
         response = completion(
             model=model_name,
             messages=messages,
@@ -572,6 +580,12 @@ class NanonetsIDPBenchmark:
             temperature=model_config.get("temperature", 0.0),
             reasoning_effort="low",
             drop_params=True,
+            api_key=model_config.get("api_key", None)
+            if model_name.startswith("hosted_vllm/")
+            else None,
+            api_base=model_config.get("api_base", None)
+            if model_name.startswith("hosted_vllm/")
+            else None,
         )
         response_cost = response._hidden_params["response_cost"]
         token_counter = (
