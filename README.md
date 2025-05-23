@@ -70,6 +70,7 @@ For more details (Installation, Usage, and so on), please check out the [feature
 
 <details>
 <summary>Older Changes</summary>
+  
 - **12-05-2025** – Added `Claude 3.7 sonnet`, `mistral-medium-3` evaluation metrics to the leaderboard.
 </details>
 
