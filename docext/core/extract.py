@@ -13,6 +13,7 @@ from docext.core.client import sync_request
 from docext.core.confidence import get_fields_confidence_score_messages_binary
 from docext.core.prompts import get_fields_messages
 from docext.core.prompts import get_tables_messages
+from docext.core.utils import convert_files_to_images
 from docext.core.utils import resize_images
 from docext.core.utils import validate_fields_and_tables
 from docext.core.utils import validate_file_paths
@@ -112,6 +113,7 @@ def extract_information(
         for file_input in file_inputs
     ]
     validate_file_paths(file_paths)
+    file_paths = convert_files_to_images(file_paths)
     resize_images(file_paths, max_img_size)
 
     # call fields and tables extraction in parallel
