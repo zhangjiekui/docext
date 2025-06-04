@@ -14,6 +14,7 @@ from docext.app.utils import cleanup
 from docext.core.config import TEMPLATES_FIELDS
 from docext.core.config import TEMPLATES_TABLES
 from docext.core.extract import extract_information
+from docext.core.utils import convert_files_to_images
 from docext.core.vllm import VLLMServer
 
 METADATA = []
@@ -139,8 +140,28 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
                 visible=False,
             )
 
-            images_input = gr.Gallery(label="Upload images", preview=True)
-            submit_btn = gr.Button("Submit")
+            file_input = gr.File(
+                label="Upload Documents",
+                file_types=[".pdf", ".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".gif", ".webp"],
+                file_count="multiple"
+            )
+            images_input = gr.Gallery(label="Document Preview", preview=True, visible=False)
+            submit_btn = gr.Button("Submit", visible=False)
+
+            def handle_file_upload(files):
+                if not files:
+                    return None, gr.update(visible=False), gr.update(visible=False)
+                
+                file_paths = [f.name for f in files]
+                # Convert PDFs to images if necessary and get all image paths
+                image_paths = convert_files_to_images(file_paths)
+                return image_paths, gr.update(visible=True, value=image_paths), gr.update(visible=True)
+
+            file_input.change(
+                handle_file_upload,
+                inputs=[file_input],
+                outputs=[images_input, images_input, submit_btn]
+            )
 
     with gr.Row():
         with gr.Column(scale=3):
