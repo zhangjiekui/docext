@@ -64,14 +64,15 @@ For more details (Installation, Usage, and so on), please check out the [feature
 ## Change Log
 
 ### Latest Updates
+- **06-06-2025** - Added `gemini-2.5-pro-preview-06-05` evaluation metrics to the leaderboard.
 - **04-06-2025** - Added support for PDF and multiple documents in `docext` extraction.
 - **23-05-2025** – Added `gemini-2.5-pro-preview-03-25`, `claude-sonnet-4` evaluation metrics to the leaderboard.
-- **17-05-2025** – Added `InternVL3-38B-Instruct`, `qwen2.5-vl-32b-instruct` evaluation metrics to the leaderboard.
-- **16-05-2025** – Added `gemma-3-27b-it` evaluation metrics to the leaderboard.
 
 <details>
 <summary>Older Changes</summary>
-  
+
+- **17-05-2025** – Added `InternVL3-38B-Instruct`, `qwen2.5-vl-32b-instruct` evaluation metrics to the leaderboard.
+- **16-05-2025** – Added `gemma-3-27b-it` evaluation metrics to the leaderboard.
 - **12-05-2025** – Added `Claude 3.7 sonnet`, `mistral-medium-3` evaluation metrics to the leaderboard.
 </details>
 
