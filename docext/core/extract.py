@@ -13,6 +13,7 @@ from docext.core.client import sync_request
 from docext.core.confidence import get_fields_confidence_score_messages_binary
 from docext.core.prompts import get_fields_messages
 from docext.core.prompts import get_tables_messages
+from docext.core.utils import convert_files_to_images
 from docext.core.utils import resize_images
 from docext.core.utils import validate_fields_and_tables
 from docext.core.utils import validate_file_paths
@@ -65,14 +66,36 @@ def extract_fields_from_documents(
     extracted_fields = json_repair.loads(response)
     conf_scores = json_repair.loads(response_conf_score)
 
-    df = pd.DataFrame(
-        {
-            "fields": field_names,
-            "answer": [extracted_fields.get(field, "") for field in field_names],
-            "confidence": [conf_scores.get(field, "Low") for field in field_names],
-        },
-    )
-    return df
+    logger.info(f"Extracted fields: {extracted_fields}")
+    logger.info(f"Conf scores: {conf_scores}")
+
+    # Handle both single dictionary and list of dictionaries
+    if not isinstance(extracted_fields, list):
+        extracted_fields = [extracted_fields]
+    
+    # Handle confidence scores similarly
+    if not isinstance(conf_scores, list):
+        conf_scores = [conf_scores] * len(extracted_fields)
+    elif len(conf_scores) < len(extracted_fields):
+        # If we have fewer confidence scores than documents, pad with the first confidence score
+        conf_scores.extend([conf_scores[0]] * (len(extracted_fields) - len(conf_scores)))
+    
+    # Create a list of dataframes, one for each document
+    dfs = []
+    for idx, (doc_fields, doc_conf_scores) in enumerate(zip(extracted_fields, conf_scores)):
+        df = pd.DataFrame(
+            {
+                "fields": field_names,
+                "answer": [doc_fields.get(field, "") for field in field_names],
+                "confidence": [doc_conf_scores.get(field, "Low") for field in field_names],
+                "document_index": [idx] * len(field_names)
+            },
+        )
+        dfs.append(df)
+    
+    # Concatenate all dataframes with a document index
+    final_df = pd.concat(dfs, ignore_index=True)
+    return final_df
 
 
 def extract_tables_from_documents(
@@ -112,6 +135,7 @@ def extract_information(
         for file_input in file_inputs
     ]
     validate_file_paths(file_paths)
+    file_paths = convert_files_to_images(file_paths)
     resize_images(file_paths, max_img_size)
 
     # call fields and tables extraction in parallel
@@ -131,4 +155,9 @@ def extract_information(
 
         fields_df = future_fields.result()
         tables_df = future_tables.result()
+    
+    # Group fields by document_index for better display
+    if not fields_df.empty and 'document_index' in fields_df.columns:
+        fields_df = fields_df.sort_values(['document_index', 'fields'])
+    
     return fields_df, tables_df

@@ -7,6 +7,7 @@ from typing import Union
 
 import pandas as pd
 from PIL import Image
+from docext.core.file_converters.pdf_converter import PDFConverter
 
 
 def encode_image(image_path):
@@ -65,4 +66,31 @@ def validate_file_paths(file_paths: list[str]):
             ".bmp",
             ".gif",
             ".webp",
+            ".pdf",
         ], f"File {file_path} is not an image"
+
+def file_is_supported_image(file_path: str) -> bool:
+    return os.path.splitext(file_path)[1].lower() in [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".tiff",
+        ".bmp",
+        ".gif",
+        ".webp",
+    ]
+
+# TODO: add support for other file types; only support pdf for now
+def convert_files_to_images(file_paths: list[str]):
+    converted_file_paths = []
+    pdf_converter = PDFConverter()
+    for file_path in file_paths:
+        if os.path.splitext(file_path)[1].lower() == ".pdf":
+            images = pdf_converter.convert_to_images(file_path)
+            for i, image in enumerate(images):
+                image.save(f"{file_path.replace('.pdf', '')}_{i}.jpg")
+                converted_file_paths.append(f"{file_path.replace('.pdf', '')}_{i}.jpg")
+        else:
+            if file_is_supported_image(file_path):
+                converted_file_paths.append(file_path)
+    return converted_file_paths
