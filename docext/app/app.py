@@ -8,6 +8,7 @@ import pandas as pd
 from loguru import logger
 
 from docext.app.args import parse_args
+from docext.app.pdf2md import pdf_to_markdown_ui
 from docext.app.utils import check_ollama_healthcheck
 from docext.app.utils import check_vllm_healthcheck
 from docext.app.utils import cleanup
@@ -142,25 +143,40 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
 
             file_input = gr.File(
                 label="Upload Documents",
-                file_types=[".pdf", ".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".gif", ".webp"],
-                file_count="multiple"
+                file_types=[
+                    ".pdf",
+                    ".jpg",
+                    ".jpeg",
+                    ".png",
+                    ".tiff",
+                    ".bmp",
+                    ".gif",
+                    ".webp",
+                ],
+                file_count="multiple",
             )
-            images_input = gr.Gallery(label="Document Preview", preview=True, visible=False)
+            images_input = gr.Gallery(
+                label="Document Preview", preview=True, visible=False
+            )
             submit_btn = gr.Button("Submit", visible=False)
 
             def handle_file_upload(files):
                 if not files:
                     return None, gr.update(visible=False), gr.update(visible=False)
-                
+
                 file_paths = [f.name for f in files]
                 # Convert PDFs to images if necessary and get all image paths
                 image_paths = convert_files_to_images(file_paths)
-                return image_paths, gr.update(visible=True, value=image_paths), gr.update(visible=True)
+                return (
+                    image_paths,
+                    gr.update(visible=True, value=image_paths),
+                    gr.update(visible=True),
+                )
 
             file_input.change(
                 handle_file_upload,
                 inputs=[file_input],
-                outputs=[images_input, images_input, submit_btn]
+                outputs=[images_input, images_input, submit_btn],
             )
 
     with gr.Row():
@@ -226,12 +242,19 @@ def gradio_app(
                     max_img_size_input,
                     concurrency_limit,
                 )
+            with gr.Tab("Image and PDF to markdown"):
+                gr.Markdown(
+                    """Upload an image or a PDF file and convert it to markdown."""
+                )
+                pdf_to_markdown_ui(model_name, max_img_size, concurrency_limit)
+
         logger.info(f"Launching gradio app on port {gradio_port}")
         demo.launch(
             auth=("admin", "admin"),
             share=not share,
             server_name="0.0.0.0",
             server_port=gradio_port,
+            show_error=True,
         )
 
 
