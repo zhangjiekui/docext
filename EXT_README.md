@@ -71,6 +71,7 @@ python -m docext.app.app --concurrency_limit 10
 import pandas as pd
 import concurrent.futures
 from gradio_client import Client, handle_file
+from docext.core.file_converters.pdf_converter import PDFConverter
 
 
 def dataframe_to_custom_dict(df: pd.DataFrame) -> dict:
@@ -110,6 +111,12 @@ fields_and_tables = dataframe_to_custom_dict(pd.DataFrame([
     {"name": "item_description", "type": "table", "description": "Item/Product description"}
     # add more fields and table columns as needed
 ]))
+# client url can be the local host or the public url like `https://6986bdd23daef6f7eb.gradio.live/`
+CLIENT_URL = "http://localhost:7860"
+
+
+
+## ======= Image Inputs =======
 
 file_inputs = [
     {
@@ -119,9 +126,8 @@ file_inputs = [
 ]
 
 ## send single request
-### client url can be the local host or the public url like `https://6986bdd23daef6f7eb.gradio.live/`
 fields_df, tables_df = get_extracted_fields_and_tables(
-    "http://localhost:7860", "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+    CLIENT_URL, "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
 )
 print("========Fields:=========")
 print(fields_df)
@@ -129,11 +135,25 @@ print("========Tables:=========")
 print(tables_df)
 
 
+## ======= PDF Inputs =======
+
+pdf_converter = PDFConverter()
+document_pages = pdf_converter.convert_and_save_images("assets/invoice_test.pdf")
+file_inputs = [{"image": handle_file(page)} for page in document_pages]
+
+fields_df, tables_df = get_extracted_fields_and_tables(
+    CLIENT_URL, "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+)
+print("========Fields:=========")
+print(fields_df)
+print("========Tables:=========")
+print(tables_df)
+
 ## send multiple requests in parallel
 # Define a wrapper function for parallel execution
 def run_request():
     return get_extracted_fields_and_tables(
-        "http://localhost:7860", "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
+        CLIENT_URL, "admin", "admin", "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ", fields_and_tables, file_inputs
     )
 
 # Use ThreadPoolExecutor to send 10 requests in parallel
