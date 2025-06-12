@@ -42,7 +42,7 @@ class VLLMServer:
         logger.info("Starting vLLM server...")
         # Command to start the vLLM server
         is_awq = "awq" in self.model_name.lower()
-        dtype = dtype if not is_awq else "float16"
+        dtype = self.dtype if not is_awq else "float16"
         command = [
             "vllm",
             "serve",
