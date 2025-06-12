@@ -18,7 +18,9 @@
   </a>
 </p>
 
-![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.jpg)
+<!-- ![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/pdf2markdown.jpg) -->
+![Demo Docext](assets/pdf2markdown.png)
+
 
 ## New Model Release: Nanonets-OCR-s
 
