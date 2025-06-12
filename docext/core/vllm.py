@@ -20,6 +20,7 @@ class VLLMServer:
         gpu_memory_utilization: float = 0.98,
         max_num_imgs: int = 5,
         vllm_start_timeout: int = 300,
+        dtype: str = "bfloat16",
     ):
         self.host = host
         self.port = port
@@ -30,12 +31,18 @@ class VLLMServer:
         self.server_process = None
         self.url = f"http://{self.host}:{self.port}/v1/models"
         self.vllm_start_timeout = vllm_start_timeout
+        self.dtype = dtype
+        assert self.dtype in [
+            "bfloat16",
+            "float16",
+        ], "Invalid dtype. Must be 'bfloat16' or 'float16'."
 
     def start_server(self):
         """Start the vLLM server in a background thread."""
         logger.info("Starting vLLM server...")
         # Command to start the vLLM server
         is_awq = "awq" in self.model_name.lower()
+        dtype = self.dtype if not is_awq else "float16"
         command = [
             "vllm",
             "serve",
@@ -45,7 +52,7 @@ class VLLMServer:
             "--port",
             str(self.port),
             "--dtype",
-            "bfloat16" if not is_awq else "float16",
+            dtype,
             "--limit-mm-per-prompt",
             f"image={self.max_num_imgs},video=0",
             "--served-model-name",

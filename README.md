@@ -18,18 +18,42 @@
   </a>
 </p>
 
-![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/demo.jpg)
+<!-- ![Demo Docext](https://raw.githubusercontent.com/NanoNets/docext/main/assets/pdf2markdown.jpg) -->
+![Demo Docext](assets/pdf2markdown.png)
 
 
+## New Model Release: Nanonets-OCR-s
+
+**We're excited to announce the release of Nanonets-OCR-s, a compact 3B parameter model specifically trained for efficient image to markdown conversion with semantic understanding for images, signatures, watermarks, etc.!**
+
+  📢 [Read the full announcement](https://nanonets.com/research/nanonets-ocr-s) | 🤗 [Hugging Face model](https://huggingface.co/nanonets/Nanonets-OCR-s)
 
 ## Overview
 
-docext is an OCR-free tool for extracting structured information from documents such as invoices, passports, and other documents. It leverages vision-language models (VLMs) to accurately identify and extract both field data and tabular information from document images.
+docext is a comprehensive on-premises document intelligence toolkit powered by vision-language models (VLMs). It provides three core capabilities:
 
-The [Intelligent Document Processing Leaderboard](https://idp-leaderboard.org/) tracks and evaluates performance vision-language models across OCR, Key Information Extraction (KIE), document classification, table extraction, and other intelligent document processing tasks.
+**📄 PDF & Image to Markdown Conversion**: Transform documents into structured markdown with intelligent content recognition, including LaTeX equations, signatures, watermarks, tables, and semantic tagging.
+
+**🔍 Document Information Extraction**: OCR-free extraction of structured information (fields, tables, etc.) from documents such as invoices, passports, and other document types, with confidence scoring.
+
+**📊 Intelligent Document Processing Leaderboard**: A comprehensive benchmarking platform that tracks and evaluates vision-language model performance across OCR, Key Information Extraction (KIE), document classification, table extraction, and other intelligent document processing tasks.
 
 
 ## Features
+### PDF and Image to Markdown
+Convert both PDF and images to markdown with content recognition and semantic tagging.
+- **LaTeX Equation Recognition**: Convert both inline and block LaTeX equations in images to markdown.
+- **Intelligent Image Description**: Generate a detailed description for all images in the document within `<img></img>` tags.
+- **Signature Detection**: Detect and mark signatures and watermarks in the document. Signatures text are extracted within `<signature></signature>` tags.
+- **Watermark Detection**: Detect and mark watermarks in the document. Watermarks text are extracted within `<watermark></watermark>` tags.
+- **Page Number Detection**: Detect and mark page numbers in the document. Page numbers are extracted within `<page_number></page_number>` tags.
+- **Checkboxes and Radio Buttons**: Converts form checkboxes and radio buttons into standardized Unicode symbols (☐, ☑, ☒).
+- **Table Detection**: Convert complex tables into html tables.
+
+🔍 For in-depth information, see the [release blog](https://github.com/NanoNets/docext/tree/main/docext/benchmark).
+
+For setup instructions and additional details, check out the full feature guide for the [pdf to markdown](https://github.com/NanoNets/docext/blob/main/PDF2MD_README.md).
+
 ### Intelligent Document Processing Leaderboard
 This benchmark evaluates performance across seven key document intelligence challenges:
 
@@ -64,13 +88,14 @@ For more details (Installation, Usage, and so on), please check out the [feature
 ## Change Log
 
 ### Latest Updates
+- **12-06-2025** - Added pdf and image to markdown support.
 - **06-06-2025** - Added `gemini-2.5-pro-preview-06-05` evaluation metrics to the leaderboard.
 - **04-06-2025** - Added support for PDF and multiple documents in `docext` extraction.
-- **23-05-2025** – Added `gemini-2.5-pro-preview-03-25`, `claude-sonnet-4` evaluation metrics to the leaderboard.
 
 <details>
 <summary>Older Changes</summary>
 
+- **23-05-2025** – Added `gemini-2.5-pro-preview-03-25`, `claude-sonnet-4` evaluation metrics to the leaderboard.
 - **17-05-2025** – Added `InternVL3-38B-Instruct`, `qwen2.5-vl-32b-instruct` evaluation metrics to the leaderboard.
 - **16-05-2025** – Added `gemma-3-27b-it` evaluation metrics to the leaderboard.
 - **12-05-2025** – Added `Claude 3.7 sonnet`, `mistral-medium-3` evaluation metrics to the leaderboard.

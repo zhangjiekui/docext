@@ -8,6 +8,7 @@ import pandas as pd
 from loguru import logger
 
 from docext.app.args import parse_args
+from docext.app.pdf2md import pdf_to_markdown_ui
 from docext.app.utils import check_ollama_healthcheck
 from docext.app.utils import check_vllm_healthcheck
 from docext.app.utils import cleanup
@@ -142,25 +143,40 @@ def define_keys_and_extract(model_name: str, max_img_size: int, concurrency_limi
 
             file_input = gr.File(
                 label="Upload Documents",
-                file_types=[".pdf", ".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".gif", ".webp"],
-                file_count="multiple"
+                file_types=[
+                    ".pdf",
+                    ".jpg",
+                    ".jpeg",
+                    ".png",
+                    ".tiff",
+                    ".bmp",
+                    ".gif",
+                    ".webp",
+                ],
+                file_count="multiple",
             )
-            images_input = gr.Gallery(label="Document Preview", preview=True, visible=False)
+            images_input = gr.Gallery(
+                label="Document Preview", preview=True, visible=False
+            )
             submit_btn = gr.Button("Submit", visible=False)
 
             def handle_file_upload(files):
                 if not files:
                     return None, gr.update(visible=False), gr.update(visible=False)
-                
+
                 file_paths = [f.name for f in files]
                 # Convert PDFs to images if necessary and get all image paths
                 image_paths = convert_files_to_images(file_paths)
-                return image_paths, gr.update(visible=True, value=image_paths), gr.update(visible=True)
+                return (
+                    image_paths,
+                    gr.update(visible=True, value=image_paths),
+                    gr.update(visible=True),
+                )
 
             file_input.change(
                 handle_file_upload,
                 inputs=[file_input],
-                outputs=[images_input, images_input, submit_btn]
+                outputs=[images_input, images_input, submit_btn],
             )
 
     with gr.Row():
@@ -195,6 +211,7 @@ def gradio_app(
     share: bool,
     vllm_server_host: str,
     vllm_server_port: int,
+    max_gen_tokens: int,
 ):
     # set vlm_model_url env variable
     hosted_model_url = f"http://{vllm_server_host}:{vllm_server_port}"
@@ -226,12 +243,21 @@ def gradio_app(
                     max_img_size_input,
                     concurrency_limit,
                 )
+            with gr.Tab("Image and PDF to markdown"):
+                gr.Markdown(
+                    """Upload an image or a PDF file and convert it to markdown."""
+                )
+                pdf_to_markdown_ui(
+                    model_name, max_img_size, concurrency_limit, max_gen_tokens
+                )
+
         logger.info(f"Launching gradio app on port {gradio_port}")
         demo.launch(
             auth=("admin", "admin"),
             share=not share,
             server_name="0.0.0.0",
             server_port=gradio_port,
+            show_error=True,
         )
 
 
@@ -247,6 +273,8 @@ def main(
     max_img_size: int,
     concurrency_limit: int,
     share: bool,
+    dtype: str,
+    max_gen_tokens: int,
 ):
     vllm_server = None
     if model_name.startswith("hosted_vllm/") and (
@@ -267,6 +295,7 @@ def main(
                 gpu_memory_utilization=gpu_memory_utilization,
                 max_num_imgs=max_num_imgs,
                 vllm_start_timeout=vllm_start_timeout,
+                dtype=dtype,
             )
             vllm_server.run_in_background()
 
@@ -310,11 +339,12 @@ def main(
             share,
             host,
             port,
+            max_gen_tokens,
         )
     except (KeyboardInterrupt, Exception) as e:
+        logger.error(f"Error: {e}")
         if vllm_server:
             cleanup(None, None, vllm_server)
-        logger.error(f"Error: {e}")
 
 
 def docext_app():
@@ -333,6 +363,8 @@ def docext_app():
         args.max_img_size,
         args.concurrency_limit,
         args.share,
+        args.dtype,
+        args.max_gen_tokens,
     )
 
 

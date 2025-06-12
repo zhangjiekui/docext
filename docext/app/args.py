@@ -26,8 +26,9 @@ def parse_args():
         help="Name of the model to use. Use 'ollama/' prefix for OLLAMA models and 'hosted_vllm/' prefix for hosted vLLM models.",
     )
     parser.add_argument(
-        "--ui_port",
+        "--server_port",
         type=int,
+        dest="ui_port",
         default=7860,
         help="Port for the gradio UI",
     )
@@ -77,6 +78,18 @@ def parse_args():
         "--concurrency_limit",
         type=int,
         default=1,
-        help="Maximum number of concurrent requests. Increase this value if you want to process more requests in parallel.",
+        help="Maximum number of concurrent PDF to markdown conversion requests. Higher values allow more users to process documents simultaneously but require more memory and compute resources.",
+    )
+    parser.add_argument(
+        "--dtype",
+        type=str,
+        default="bfloat16",
+        help="Data type for the model. Can be 'bfloat16' or 'float16'.",
+    )
+    parser.add_argument(
+        "--max_gen_tokens",
+        type=int,
+        default=10000,
+        help="Maximum number of tokens to generate for the model.",
     )
     return parser.parse_args()
