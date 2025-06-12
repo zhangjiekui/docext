@@ -72,7 +72,7 @@ def stream_request(
 
 
 def convert_to_markdown_stream(
-    file_inputs, model_name, max_img_size, concurrency_limit
+    file_inputs, model_name, max_img_size, concurrency_limit, max_gen_tokens
 ):
     """
     Generator function that yields streaming markdown conversion results
@@ -119,7 +119,7 @@ def convert_to_markdown_stream(
             for chunk in stream_request(
                 messages=messages,
                 model_name=model_name,
-                max_tokens=10000,  # Reduced since processing single image
+                max_tokens=max_gen_tokens,
             ):
                 page_content += chunk
                 # Yield accumulated content from all pages processed so far + current page
@@ -144,7 +144,7 @@ def convert_to_markdown_stream(
                 from docext.core.client import sync_request
 
                 response = sync_request(
-                    messages=messages, model_name=model_name, max_tokens=10000
+                    messages=messages, model_name=model_name, max_tokens=max_gen_tokens
                 )
                 page_content = response["choices"][0]["message"]["content"]
                 full_markdown_content += (
@@ -166,14 +166,16 @@ def convert_to_markdown_stream(
     logger.info("Successfully completed document conversion")
 
 
-def convert_to_markdown(file_inputs, model_name, max_img_size, concurrency_limit):
+def convert_to_markdown(
+    file_inputs, model_name, max_img_size, concurrency_limit, max_gen_tokens
+):
     """
     Non-streaming version for backward compatibility
     """
     # Get the final result from the streaming generator
     final_result = ""
     for result in convert_to_markdown_stream(
-        file_inputs, model_name, max_img_size, concurrency_limit
+        file_inputs, model_name, max_img_size, concurrency_limit, max_gen_tokens
     ):
         final_result = result
     return final_result

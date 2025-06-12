@@ -85,4 +85,10 @@ def parse_args():
         default="bfloat16",
         help="Data type for the model. Can be 'bfloat16' or 'float16'.",
     )
+    parser.add_argument(
+        "--max_gen_tokens",
+        type=int,
+        default=10000,
+        help="Maximum number of tokens to generate for the model.",
+    )
     return parser.parse_args()

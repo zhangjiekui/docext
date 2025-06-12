@@ -27,7 +27,9 @@ def process_tags(content: str) -> str:
     return content
 
 
-def pdf_to_markdown_ui(model_name: str, max_img_size: int, concurrency_limit: int):
+def pdf_to_markdown_ui(
+    model_name: str, max_img_size: int, concurrency_limit: int, max_gen_tokens: int
+):
     with gr.Row():
         with gr.Column():
             # Add status indicator for concurrent processing
@@ -109,7 +111,11 @@ We’ve open-sourced Nanonets-OCR-s, A model for transforming documents into str
                 current_page = 1
                 try:
                     for markdown_content in convert_to_markdown_stream(
-                        images, model_name, max_img_size, concurrency_limit
+                        images,
+                        model_name,
+                        max_img_size,
+                        concurrency_limit,
+                        max_gen_tokens,
                     ):
                         # Add progress indicator at the top for multi-page documents
                         if num_pages > 1:

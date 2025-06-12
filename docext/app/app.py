@@ -211,6 +211,7 @@ def gradio_app(
     share: bool,
     vllm_server_host: str,
     vllm_server_port: int,
+    max_gen_tokens: int,
 ):
     # set vlm_model_url env variable
     hosted_model_url = f"http://{vllm_server_host}:{vllm_server_port}"
@@ -246,7 +247,9 @@ def gradio_app(
                 gr.Markdown(
                     """Upload an image or a PDF file and convert it to markdown."""
                 )
-                pdf_to_markdown_ui(model_name, max_img_size, concurrency_limit)
+                pdf_to_markdown_ui(
+                    model_name, max_img_size, concurrency_limit, max_gen_tokens
+                )
 
         logger.info(f"Launching gradio app on port {gradio_port}")
         demo.launch(
@@ -271,6 +274,7 @@ def main(
     concurrency_limit: int,
     share: bool,
     dtype: str,
+    max_gen_tokens: int,
 ):
     vllm_server = None
     if model_name.startswith("hosted_vllm/") and (
@@ -335,6 +339,7 @@ def main(
             share,
             host,
             port,
+            max_gen_tokens,
         )
     except (KeyboardInterrupt, Exception) as e:
         if vllm_server:
@@ -359,6 +364,7 @@ def docext_app():
         args.concurrency_limit,
         args.share,
         args.dtype,
+        args.max_gen_tokens,
     )
 
 
