@@ -342,9 +342,9 @@ def main(
             max_gen_tokens,
         )
     except (KeyboardInterrupt, Exception) as e:
+        logger.error(f"Error: {e}")
         if vllm_server:
             cleanup(None, None, vllm_server)
-        logger.error(f"Error: {e}")
 
 
 def docext_app():
