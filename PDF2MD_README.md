@@ -25,7 +25,7 @@ Convert PDF documents and images to high-quality markdown format using vision-la
 
 ## Getting Started
 ### Quickstart
-- [Colab notebook for onprem deployment]()
+- [Colab notebook for onprem deployment](https://colab.research.google.com/drive/1uKO70sctH8G59yYH_rLW6CPK4Vj2YmI6?usp=sharing)
 
 ### Installation
 ```bash
