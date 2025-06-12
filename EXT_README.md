@@ -52,7 +52,7 @@ python -m docext.app.app
 python -m docext.app.app --model_name "hosted_vllm/Qwen/Qwen2.5-VL-7B-Instruct-AWQ" --max_img_size 1024 # `--help` for more options
 ```
 
-The interface will be available at `http://localhost:7860` with default credentials: (You can change the port by using `--ui_port` flag)
+The interface will be available at `http://localhost:7860` with default credentials: (You can change the port by using `--server_port` flag)
 
 - Username: `admin`
 - Password: `admin`
