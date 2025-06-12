@@ -26,8 +26,9 @@ def parse_args():
         help="Name of the model to use. Use 'ollama/' prefix for OLLAMA models and 'hosted_vllm/' prefix for hosted vLLM models.",
     )
     parser.add_argument(
-        "--ui_port",
+        "--server_port",
         type=int,
+        dest="ui_port",
         default=7860,
         help="Port for the gradio UI",
     )
