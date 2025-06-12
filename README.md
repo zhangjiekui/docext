@@ -22,7 +22,7 @@
 
 ## New Model Release: Nanonets-OCR-s
 
-**We're excited to announce the release of Nanonets-OCR-s, a compact 3B parameter model specifically trained for efficient image to markdown conversion!**
+**We're excited to announce the release of Nanonets-OCR-s, a compact 3B parameter model specifically trained for efficient image to markdown conversion with semantic understanding for images, signatures, watermarks, etc.!**
 
   📢 [Read the full announcement](https://nanonets.com/research/nanonets-ocr-s) | 🤗 [Hugging Face model](https://huggingface.co/nanonets/Nanonets-OCR-s)
 
