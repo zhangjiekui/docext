@@ -79,4 +79,10 @@ def parse_args():
         default=1,
         help="Maximum number of concurrent PDF to markdown conversion requests. Higher values allow more users to process documents simultaneously but require more memory and compute resources.",
     )
+    parser.add_argument(
+        "--dtype",
+        type=str,
+        default="bfloat16",
+        help="Data type for the model. Can be 'bfloat16' or 'float16'.",
+    )
     return parser.parse_args()

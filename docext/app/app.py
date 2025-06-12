@@ -270,6 +270,7 @@ def main(
     max_img_size: int,
     concurrency_limit: int,
     share: bool,
+    dtype: str,
 ):
     vllm_server = None
     if model_name.startswith("hosted_vllm/") and (
@@ -290,6 +291,7 @@ def main(
                 gpu_memory_utilization=gpu_memory_utilization,
                 max_num_imgs=max_num_imgs,
                 vllm_start_timeout=vllm_start_timeout,
+                dtype=dtype,
             )
             vllm_server.run_in_background()
 
@@ -356,6 +358,7 @@ def docext_app():
         args.max_img_size,
         args.concurrency_limit,
         args.share,
+        args.dtype,
     )
 
 
