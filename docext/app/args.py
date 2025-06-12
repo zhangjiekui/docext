@@ -77,6 +77,6 @@ def parse_args():
         "--concurrency_limit",
         type=int,
         default=1,
-        help="Maximum number of concurrent requests. Increase this value if you want to process more requests in parallel.",
+        help="Maximum number of concurrent PDF to markdown conversion requests. Higher values allow more users to process documents simultaneously but require more memory and compute resources.",
     )
     return parser.parse_args()

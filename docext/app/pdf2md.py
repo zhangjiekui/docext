@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import re
 import time
+import uuid
+from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 import gradio as gr
 
@@ -25,6 +30,16 @@ def process_tags(content: str) -> str:
 def pdf_to_markdown_ui(model_name: str, max_img_size: int, concurrency_limit: int):
     with gr.Row():
         with gr.Column():
+            # Add status indicator for concurrent processing
+            gr.Markdown(
+                """
+Try Nanonets-OCR-s<br>
+We’ve open-sourced Nanonets-OCR-s, A model for transforming documents into structured markdown with content recognition and semantic tagging.<br>
+📖 [Release Blog](https://huggingface.co/nanonets/Nanonets-OCR-s) 🤗 [View on Hugging Face](https://huggingface.co/nanonets/Nanonets-OCR-s)
+""",
+                visible=True,
+            ) if model_name != "hosted_vllm/nanonets/Nanonets-OCR-s" else None
+
             file_input = gr.File(
                 label="Upload Documents",
                 file_types=[
@@ -81,35 +96,45 @@ def pdf_to_markdown_ui(model_name: str, max_img_size: int, concurrency_limit: in
             def process_markdown_streaming(images):
                 """
                 Process markdown with streaming updates (page by page)
+                Optimized for concurrent processing of multiple requests
                 """
-                # Initialize with a loading message
+                # Generate unique request ID for tracking
+                request_id = str(uuid.uuid4())[:8]
+                start_time = datetime.now().strftime("%H:%M:%S")
+
+                # Initialize with a loading message including concurrent processing info
                 num_pages = len(images) if images else 0
-                if num_pages == 1:
-                    yield "🔄 **Converting document to markdown...**\n\n*Processing single page document...*"
-                else:
-                    yield f"🔄 **Converting {num_pages}-page document to markdown...**\n\n*Processing page by page...*"
 
                 # Stream the actual conversion
                 current_page = 1
-                for markdown_content in convert_to_markdown_stream(
-                    images, model_name, max_img_size, concurrency_limit
-                ):
-                    # Add progress indicator at the top for multi-page documents
-                    if num_pages > 1:
-                        progress_header = f"📄 **Document Conversion Progress** (Processing page {min(current_page, num_pages)} of {num_pages})\n\n"
-                        yield progress_header + process_tags(markdown_content)
-                    else:
-                        yield process_tags(markdown_content)
+                try:
+                    for markdown_content in convert_to_markdown_stream(
+                        images, model_name, max_img_size, concurrency_limit
+                    ):
+                        # Add progress indicator at the top for multi-page documents
+                        if num_pages > 1:
+                            progress_header = f"📄 **Document Conversion Progress** `[Request {request_id}]` (Processing page {min(current_page, num_pages)} of {num_pages})\n\n"
+                            yield progress_header + process_tags(markdown_content)
+                        else:
+                            yield process_tags(markdown_content)
 
-                    # Estimate current page based on content length (rough approximation)
-                    if "---" in markdown_content:
-                        current_page = markdown_content.count("---") + 1
+                        # Estimate current page based on content length (rough approximation)
+                        if "---" in markdown_content:
+                            current_page = markdown_content.count("---") + 1
 
-                    # Small delay to make streaming visible
-                    time.sleep(0.05)
+                        # Reduced delay for better concurrent performance
+                        time.sleep(0.01)
 
+                except Exception as e:
+                    error_message = f"❌ **Error processing request {request_id}**: {str(e)}\n\nPlease try again or contact support if the issue persists."
+                    yield error_message
+
+            # Enable concurrent request processing by setting concurrency_limit
+            # This allows multiple users to process documents simultaneously
             submit_btn.click(
                 process_markdown_streaming,
                 inputs=[images_input],
                 outputs=[formatted_output],
+                concurrency_limit=concurrency_limit,  # Allow multiple concurrent requests
+                concurrency_id="pdf_to_markdown_conversion",  # Unique ID for this processing pipeline
             )
