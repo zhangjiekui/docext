@@ -50,7 +50,7 @@ Convert both PDF and images to markdown with content recognition and semantic ta
 - **Checkboxes and Radio Buttons**: Converts form checkboxes and radio buttons into standardized Unicode symbols (☐, ☑, ☒).
 - **Table Detection**: Convert complex tables into html tables.
 
-🔍 For in-depth information, see the [release blog]([https://github.com/NanoNets/docext/tree/main/docext/benchmark](https://nanonets.com/research/nanonets-ocr-s/)).
+🔍 For in-depth information, see the [release blog](https://nanonets.com/research/nanonets-ocr-s/).
 
 For setup instructions and additional details, check out the full feature guide for the [pdf to markdown](https://github.com/NanoNets/docext/blob/main/PDF2MD_README.md).
 
@@ -65,7 +65,7 @@ This benchmark evaluates performance across seven key document intelligence chal
 - **Table Extraction**: Benchmark structured data extraction from complex tabular formats.
 - **Confidence Score Calibration**: Evaluate the reliability and confidence of model predictions.
 
-🔍 For in-depth information, see the [release blog]([https://github.com/NanoNets/docext/tree/main/docext/benchmark](https://idp-leaderboard.org/details/)).
+🔍 For in-depth information, see the [release blog](https://idp-leaderboard.org/details/).
 
 📊 **Live leaderboard:** [https://idp-leaderboard.org](https://idp-leaderboard.org)
 
